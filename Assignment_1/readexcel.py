@@ -51,10 +51,10 @@ c     = np.array(price*len(df))
 alpha = df['Alpha'].values
 beta  = df['Beta'].values
 
-A_eq = np.array([[0.0]*len(c)]*len(df))
-A_ub = np.array([[0.0]*len(c)]*len(c))
+A_eq = np.array([[0.0]*len(c)]*len(df))   # Equality constraint
+A_ub = np.array([[0.0]*len(c)]*len(c))    
 
-b_eq = df['Daily usage [kW]'].values
+b_eq = df['Daily usage [kW]'].values      # Equality constraint
 b_ub = np.array([[0.0]*24]*len(df))
 
 
@@ -64,11 +64,12 @@ for i in range(len(df)):
 		if j >= alpha[i] and j <= beta[i]:
 			b_ub[i][j] = df['Hourly usage [kW]'].values[i]
 
-			A_ub[i][j] = 1  # ??
-			A_eq[i][j] = 1  # ??
+			#A_ub[i][j] = 1  # ??
+			#A_eq[i][j] = 1  # ??
 
 
 b_ub = b_ub.ravel()  # create 1D array 
+print(b_ub, '--------------')
 
 print(np.shape(A_eq))
 print(np.shape(b_eq))
