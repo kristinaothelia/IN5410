@@ -1,37 +1,35 @@
 import os, random, xlsxwriter, sys
 
+import matplotlib.pyplot 	as plt
+import numpy               	as np
+import functions 		   	as func
 
-import matplotlib.pyplot   as plt
-import numpy               as np
-import pandas              as pd
-
-
-from	datetime	   import  time
-from    scipy.optimize import  linprog
+from scipy.optimize 		import  linprog
 
 # Python 3.7.4
 #------------------------------------------------------------------------------
-cwd      = os.getcwd()
-filename = cwd + '/energy_use.xlsx'
-nanDict  = {}
-df       = pd.read_excel(filename, header=0, skiprows=0, index_col=0, na_values=nanDict)
 
-df = df[-3:]  # only look at the 3 last appliances
-#print(df)
+df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
+df 	  = df[-3:]  # Only look at the 3 last appliances
 
 hours = 24
-n_app = len(df)  # number of appliances
+n_app = len(df)  									# Number of appliances
 
-price = [0.5] * hours
-price[17:20] = [1.0,1.0,1.0]
+# Get variables from the Excel file
+shiftable     = df[df['Shiftable'] == 1]			# Shiftable appliances
+non_shiftable = df[df['Shiftable'] == 0]			# Non-shiftable appliances
 
-shiftable     = df[df['Shiftable'] == 1]
-non_shiftable = df[df['Shiftable'] == 0]
+alpha		  = df['Alpha'].values					# Lower bounce. Set-up time
+beta  		  = df['Beta'].values					# Upper bounce. Deadline
 
-alpha = df['Alpha'].values
-beta  = df['Beta'].values
+#------------------------------------------------------------------------------
+# Get pricing scheme. ToU (Time-of-Use) or RPT (Real-Time-Pricing)
+price = func.Get_price(hours, ToU=True)
 
+# Make histogram of pricing scheme
+#func.Make_p_hist(price)
 
+# Make day-intervals of appliance usage..?
 def interval(hour=1, start=0, stop=23, shuffle=False):
 
 	if shuffle:
@@ -63,13 +61,16 @@ for i in range(n_app):
 intervals = np.array(intervals)
 print(intervals)
 
+#------------------------------------------------------------------------------
+# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
+
 c = np.array(price*len(df))
 
 energy_hour = df['Hourly usage [kW]'].values
 E_tot       = [np.sum(energy_hour)]*hours
 
 
-A_eq = np.zeros((n_app, n_app*hours))  
+A_eq = np.zeros((n_app, n_app*hours))
 b_eq = df['Daily usage [kW]'].values
 
 for i in range(n_app):
@@ -96,9 +97,8 @@ b_ub = np.concatenate((b, E_tot))
 #print(np.shape(b_ub))
 #print(len(c))
 
-
+#------------------------------------------------------------------------------
 res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
 
 print(res)
 print(str(res.fun))
-

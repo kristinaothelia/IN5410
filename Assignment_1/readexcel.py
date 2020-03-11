@@ -23,7 +23,7 @@ price = [0.5] * 24
 price[17:20] = [1.0,1.0,1.0]
 
 
-'''
+"""
 header_names = list(df)
 print(header_names)
 
@@ -43,8 +43,8 @@ plt.title("Time of Use [ToU]", fontsize='16', weight='bold')
 plt.ylabel("Price [NOK/kWh]", fontsize='15')
 plt.xlabel("Time [UTC]", fontsize='15')
 plt.gcf().autofmt_xdate(rotation=70, ha='center')
-#plt.show()
-'''
+plt.show()
+"""
 
 
 c     = np.array(price*len(df))
@@ -52,13 +52,13 @@ alpha = df['Alpha'].values
 beta  = df['Beta'].values
 
 A_eq = np.array([[0.0]*len(c)]*len(df))   # Equality constraint
-A_ub = np.array([[0.0]*len(c)]*len(c))    
+A_ub = np.array([[0.0]*len(c)]*len(c))
 
 b_eq = df['Daily usage [kW]'].values      # Equality constraint
 b_ub = np.array([[0.0]*24]*len(df))
 
 
-for i in range(len(df)): 
+for i in range(len(df)):
 	print(df.index[i])
 	for j in range(24):
 		if j >= alpha[i] and j <= beta[i]:
@@ -68,7 +68,7 @@ for i in range(len(df)):
 			#A_eq[i][j] = 1  # ??
 
 
-b_ub = b_ub.ravel()  # create 1D array 
+b_ub = b_ub.ravel()  # create 1D array
 print(b_ub, '--------------')
 
 print(np.shape(A_eq))
@@ -82,4 +82,3 @@ res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=None)
 
 print(res)
 print(str(res.fun))
-
