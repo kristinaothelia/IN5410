@@ -1,104 +1,129 @@
-import os, random, xlsxwriter, sys
+import os, random, xlsxwriter, sys, argparse
 
 import matplotlib.pyplot 	as plt
 import numpy               	as np
 import functions 		   	as func
 
-from scipy.optimize 		import  linprog
-
+from scipy.optimize 		import linprog
+from random 				import seed
 # Python 3.7.4
 #------------------------------------------------------------------------------
+seed = 5410
 
 df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
-df 	  = df[-3:]  # Only look at the 3 last appliances
+#df 	  = df[-3:]  # Only look at the 3 last appliances
 
 hours = 24
-n_app = len(df)  									# Number of appliances
-
-# Get variables from the Excel file
-shiftable     = df[df['Shiftable'] == 1]			# Shiftable appliances
-non_shiftable = df[df['Shiftable'] == 0]			# Non-shiftable appliances
-
-alpha		  = df['Alpha'].values					# Lower bounce. Set-up time
-beta  		  = df['Beta'].values					# Upper bounce. Deadline
 
 #------------------------------------------------------------------------------
-# Get pricing scheme. ToU (Time-of-Use) or RPT (Real-Time-Pricing)
-price = func.Get_price(hours, ToU=True)
 
-# Make histogram of pricing scheme
-#func.Make_p_hist(price)
 
-# Make day-intervals of appliance usage..?
-def interval(hour=1, start=0, stop=23, shuffle=False):
+if __name__ == '__main__':
 
-	if shuffle:
-		interval = np.zeros(24)
-		interval[:hour] = 1
-		np.random.shuffle(interval)
+	parser = argparse.ArgumentParser(description="Minimize energy cost")
 
-	else:
-		interval = np.zeros(stop-start + 1)
-		interval[:hour] = 1
-		#np.random.shuffle(interval)
-		if start == 0:
-			padLeft = np.zeros(0)
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument('-1', '--Task1', action="store_true", help="3 shiftable appliances")
+	group.add_argument('-2', '--Task2', action="store_true", help="Shiftable and non-shiftable appliances")
+	group.add_argument('-3', '--Task3', action="store_true", help="30 households")
+
+	# Optional argument for plotting
+	parser.add_argument('-X', '--plot', action='store_true', help="Plotting", required=False)
+
+	if len(sys.argv) <= 1:
+		sys.argv.append('--help')
+
+	args   = parser.parse_args()
+
+	Task1  = args.Task1
+	Task2  = args.Task2
+	Task3  = args.Task3
+	Plot   = args.plot
+
+	if Task1 == True:
+
+		print("Task1")
+		print("--"*55)
+
+		df = df[-3:]     # Only look at the 3 last appliances
+
+		n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications(df)
+
+		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
+		price = func.Get_price(hours, seed=seed, ToU=True)
+
+		# Creating intervals
+		intervals = []
+		for i in range(n_app):
+			intervals.append(func.interval(hour=length[i], start=alpha[i], stop=beta[i], shuffle=False))
+
+		intervals = np.array(intervals)
+
+		#------------------------------------------------------------------------------
+		# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
+		c, A_eq, b_eq, A_ub, b_ub = func.linprog_input(df, n_app, price, intervals, hours)
+
+
+		res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
+
+		consumption = res.x.reshape(n_app,hours)
+
+
+		if Plot == True:
+			# Make histogram of pricing scheme
+			func.Make_p_hist(price)
+			func.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+
+
 		else:
-			padLeft = np.zeros(start)
-		if stop == 23:
-			return np.append(padLeft,interval)
+			print(res)
+			print(str(res.fun))
+
+	elif Task2 == True:
+
+		print("Task2")
+		print("--"*55)
+
+		df = df[-3:]     # Only look at the 3 last appliances
+
+		n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications(df)
+
+		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
+		price = func.Get_price(hours, seed=seed, ToU=False)
+
+		# Creating intervals
+		intervals = []
+		for i in range(n_app):
+			intervals.append(func.interval(hour=length[i], start=alpha[i], stop=beta[i], shuffle=False))
+
+		intervals = np.array(intervals)
+
+		#------------------------------------------------------------------------------
+		# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
+		c, A_eq, b_eq, A_ub, b_ub = func.linprog_input(df, n_app, price, intervals, hours)
+
+
+		res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
+
+		consumption = res.x.reshape(n_app,hours)
+
+
+		if Plot == True:
+			# Make histogram of pricing scheme
+			func.Make_p_hist(price)
+			func.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+
+
 		else:
-			padRight = np.zeros(24-len(interval)-len(padLeft))
-			return np.append(np.append(padLeft,interval),padRight)
-
-	return interval
+			print(res)
+			print(str(res.fun))
 
 
-intervals = []
-for i in range(n_app):
-	intervals.append(interval(hour=3, start=alpha[i], stop=beta[i], shuffle=False))
+	elif Task3 == True:
 
-intervals = np.array(intervals)
-print(intervals)
-
-#------------------------------------------------------------------------------
-# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
-
-c = np.array(price*len(df))
-
-energy_hour = df['Hourly usage [kW]'].values
-E_tot       = [np.sum(energy_hour)]*hours
+		print("Task3")
+		print("--"*55)
 
 
-A_eq = np.zeros((n_app, n_app*hours))
-b_eq = df['Daily usage [kW]'].values
 
-for i in range(n_app):
-	for j in range(hours):
-		A_eq[i,j+(hours*i)] = intervals[i][j]
-
-
-A_mul = np.zeros((hours,n_app*hours))
-for i in range(A_mul.shape[0]):
-	A_mul[i,i::hours] = 1
-A_one = np.eye(n_app*hours)
-A_ub  = np.concatenate((A_one,A_mul),axis=0)
-
-b = []
-for i in energy_hour:
-	b.append([i]*hours)
-b = np.array(b).ravel()
-b_ub = np.concatenate((b, E_tot))
-
-
-#print(np.shape(A_eq))
-#print(np.shape(b_eq))
-#print(np.shape(A_ub))
-#print(np.shape(b_ub))
-#print(len(c))
-
-#------------------------------------------------------------------------------
-res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
-
-print(res)
-print(str(res.fun))
+		
