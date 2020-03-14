@@ -3,6 +3,7 @@ import os, random, xlsxwriter, sys, argparse
 import matplotlib.pyplot 	as plt
 import numpy               	as np
 import functions 		   	as func
+import plotting 			as P
 
 from scipy.optimize 		import linprog
 from random 				import seed
@@ -62,12 +63,15 @@ if __name__ == '__main__':
 		consumption = res.x.reshape(n_app,hours)
 
 		if Plot == True:
-			func.Make_p_hist(df, price)
-			func.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+			P.Make_p_hist(df, price)
+			P.consumption_plot(price=price, app=consumption, app_names=app_names)
+			plt.show()
 
 		else:
-			print(res)
-			print(str(res.fun))
+			#print(res)
+			print(res.message)
+			print("Status: ", res.status)
+			print("Minimized cost: %.3f" % res.fun)
 
 
 	elif Task2 == True:
@@ -91,12 +95,16 @@ if __name__ == '__main__':
 		consumption = res.x.reshape(n_app,hours)
 
 		if Plot == True:
-			func.Make_p_hist(df, price)
-			func.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+			P.Make_p_hist(df, price)
+			P.consumption_plot(price=price, app=consumption, app_names=app_names)
+			#P.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+			plt.show()
 
 		else:
-			print(res)
-			print(str(res.fun))
+			#print(res)
+			print(res.message)
+			print("Status: ", res.status)
+			print("Minimized cost: %.3f" % res.fun)
 
 
 	elif Task3 == True:
