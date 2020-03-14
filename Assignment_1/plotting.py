@@ -32,10 +32,10 @@ def Make_p_hist(df, price):
 
     if len(df) == 3:
         plt.title("Time of Use [ToU]", fontsize='16', weight='bold')
-        plt.savefig("Task1_hist.png")
+        plt.savefig("Figures/Task1_hist.png")
     else:
         plt.title("Time of Use [RTP]", fontsize='16', weight='bold')
-        plt.savefig("Task2_hist.png")
+        plt.savefig("Figures/Task2_hist.png")
     #plt.show()
 
 
