@@ -2,16 +2,14 @@
 # -----------------------------------------------------------------------------
 import os, random, xlsxwriter, sys, random
 
-#import matplotlib.pyplot    as plt
 import pandas               as pd
 import numpy                as np
 
-#from datetime               import time
 from scipy.optimize         import linprog
-from numpy.random import RandomState
+from numpy.random           import RandomState
 # -----------------------------------------------------------------------------
 
-#seed = 100
+seed = 100
 seed = 3210
 rs   = RandomState(seed)
 
@@ -90,9 +88,9 @@ def interval(hour=1, alpha=0, beta=23, shuffle=False):
     # Make a time-interval (list) from alpha and beta constrictions
     interval = np.zeros(beta-alpha + 1)
 
-    # Sets n-hours (hour) to 1 inside the interval list. Can be set random within the interval list
-    interval[:hour] = 1
-    #np.random.shuffle(interval)
+    # Set interval hours to 1, meaning that these hour are availiable for energy use.
+    # Example: EV charging, 3h. linprog will deside which 3 of 6 h the EV will charge based on minimizing c.
+    interval[:] = 1
 
     if alpha == 0:
         # For the setup time, we have to move 'forward' in the time scheme --> L
