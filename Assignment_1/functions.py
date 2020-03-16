@@ -10,7 +10,7 @@ from numpy.random           import RandomState
 # -----------------------------------------------------------------------------
 
 seed = 100
-seed = 3210
+#seed = 3210
 rs   = RandomState(seed)
 
 def Get_df(file_name='/energy_use.xlsx'):
@@ -40,10 +40,85 @@ def applications(df):
 
     alpha         = df['Alpha'].values          # Lower bounce. Set-up time
     beta          = df['Beta'].values           # Upper bounce. Deadline
-    length        = df['Length'].values
+    length        = df['Length [h]'].values     # Length: Power use per day [h]
 
-    #print(str(app_names))
     return n_app, app_names, shiftable, non_shiftable, alpha, beta, length
+
+
+# OBSOBSOBS !!! Denne er ikke ferdig. Task 3
+def applications_Task3(df, households):
+    """
+    Function that returns appliances data
+
+    Some of the n-households have EVs.
+    The last 6 shiftable appliances are randomly selected for the households
+    At least 4 of these in each household.
+    """
+
+    # Disse stemmer ikke lengre, siden noe fjernes...
+    #n_app         = len(df)                     # Number of appliances
+    #app_names     = df.index.values
+
+    # Get variables from the Excel file
+    non_shiftable = df[df['Shiftable'] == 0]    # Non-shiftable appliances
+    shiftable_set = df[df['Shiftable'] == 1]    # Shiftable appliances
+    shiftable_ran = df[df['Shiftable'] == 2]    # Shiftable appliances - random
+
+    non_shiftable_names = non_shiftable.index.values
+
+    # Make sure only a fraction of the households have an EV
+    #print(shiftable_set[shiftable_set.index == 'EV'])
+
+    EV = random.randint(0, 1)
+    if EV == 0:
+        shiftable_set = shiftable_set[:-1]
+    shiftable_set_names = shiftable_set.index.values
+
+    # Now make a random selection of optional shiftable appliances,
+    # where a household has 2-6 appliances
+    optional = []
+    while len(optional) < 2:
+        random_appliances(shiftable_ran, optional)
+
+    shiftable_ran_ = pd.DataFrame(optional)
+    shiftable_ran_names = shiftable_ran_.index.values
+
+    # Number of appliances
+    n_app    = len(non_shiftable) + len(shiftable_set) + len(shiftable_ran_)
+
+    # Disse stemmer ikke lengre, siden noe fjernes...
+    alpha    = df['Alpha'].values          # Lower bounce. Set-up time
+    print(alpha)
+    beta     = df['Beta'].values           # Upper bounce. Deadline
+    length   = df['Length [h]'].values     # Length: Power use per day [h]
+
+    alpha    = non_shiftable['Alpha'].values   # Lower bounce. Set-up time
+    alpha_s  = shiftable_set['Alpha'].values
+    alpha_r  = shiftable_ran['Alpha'].values
+    print(alpha)
+    print(alpha_s)
+    print(alpha_r)
+
+    """
+    return  n_app, app_names,
+            shiftable_set, shiftable_set_names,
+            shiftable_ran_, shiftable_ran_names,
+            non_shiftable, non_shiftable_names,
+            alpha, beta, length  # Alpha osv maa skaleres naa? pga shiftable_ran_ er forskjellig???
+    """
+    return n_app, shiftable_set, shiftable_ran_, non_shiftable
+
+
+
+def random_appliances(shiftable_ran, optional):
+
+    for i in range(len(shiftable_ran)):
+        # make random numbers
+        n = random.randint(0, 1)
+        # Add random appliances to the household
+        if n == 1:
+            optional.append(shiftable_ran.iloc[i])
+
 
 def Get_price(hours, seed, ToU=False):
     """
@@ -138,12 +213,12 @@ def linprog_input(df, n_app, price, intervals, hours=24):
 
     c = np.array(price*len(df))
 
-    energy_hour = df['Hourly usage [kW]'].values
+    energy_hour = df['Hourly usage [kW]'].values    # Power Use [kW]
     E_tot       = [np.sum(energy_hour)]*hours
 
 
     A_eq = np.zeros((n_app, n_app*hours))
-    b_eq = df['Daily usage [kW]'].values
+    b_eq = df['Daily usage [kWh]'].values
 
     # ????
     for i in range(n_app):

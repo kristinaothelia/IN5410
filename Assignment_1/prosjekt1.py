@@ -13,7 +13,6 @@ from random 				import seed
 seed  = 5410
 
 df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
-
 hours = 24
 
 
@@ -44,8 +43,9 @@ if __name__ == '__main__':
 		print("--"*40); print("Task 1"); print("--"*40)
 		# ---------------------------------------------------------------------
 
-		# Only look at the 3 last appliances
-		df = df[-3:]
+		# Only look at appliances: Dishwasher, LM and EV
+		#df = df[-3:]
+		df = df[7:10]
 
 		n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications(df)
 
@@ -111,3 +111,40 @@ if __name__ == '__main__':
 
 		print("--"*40); print("Task 3"); print("--"*40)
 		# ---------------------------------------------------------------------
+		households = 1
+
+		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
+		price = func.Get_price(hours, seed=seed, ToU=False)
+
+		for i in range(households):
+		#n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications_NEW_30(df, households)
+			n_app, shiftable_set, shiftable_ran, non_shiftable = func.applications_Task3(df, households)
+			print(n_app, len(non_shiftable), len(shiftable_set), len(shiftable_ran))
+
+			"""
+			# Creating intervals
+			intervals = func.interval_severeal_app(n_app, length, alpha, beta, shuffle=False)
+
+			# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
+			c, A_eq, b_eq, A_ub, b_ub = func.linprog_input(df, n_app, price, intervals, hours)
+
+			# Make linprog calculations
+			res 		= linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
+			consumption = res.x.reshape(n_app,hours)
+			"""
+		"""
+		if Plot == True:
+
+			# Only need to plot combined shiftable and non-shiftable?
+
+			P.Make_p_hist(df, price)
+			P.consumption_plot(price=price, app=consumption, app_names=app_names)
+			#P.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+			plt.show()
+
+		else:
+			#print(res)
+			print(res.message)
+			print("Status: ", res.status)
+			print("Minimized cost: %.3f" % res.fun)
+		"""

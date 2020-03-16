@@ -6,12 +6,7 @@ import matplotlib.pyplot    as plt
 import numpy                as np
 
 from datetime               import time
-#from random                 import seed
 # -----------------------------------------------------------------------------
-
-#seed = 5410
-# Funker ikke som det skal med random.uniform() !!!
-
 
 def Make_p_hist(df, price):
     """
