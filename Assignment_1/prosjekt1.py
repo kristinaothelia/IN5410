@@ -111,14 +111,18 @@ if __name__ == '__main__':
 
 		print("--"*40); print("Task 3"); print("--"*40)
 		# ---------------------------------------------------------------------
-		households = 1
+		households = 2
 
 		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
 		price = func.Get_price(hours, seed=seed, ToU=False)
 
 		for i in range(households):
-		#n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications_NEW_30(df, households)
-			n_app, shiftable_set, shiftable_ran, non_shiftable = func.applications_Task3(df, households)
+
+			n_app, alpha, alpha_s, alpha_r, beta, beta_s, beta_r, \
+		    length, length_s, length_r, non_shiftable, non_shiftable_names, \
+		    shiftable_set, shiftable_set_names, shiftable_ran, shiftable_ran_names \
+			= func.applications_Task3(df, households)
+
 			print(n_app, len(non_shiftable), len(shiftable_set), len(shiftable_ran))
 
 			"""
@@ -131,14 +135,19 @@ if __name__ == '__main__':
 			# Make linprog calculations
 			res 		= linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
 			consumption = res.x.reshape(n_app,hours)
+			print("Minimized cost: %.3f" % res.fun)
 			"""
+
 		"""
 		if Plot == True:
 
 			# Only need to plot combined shiftable and non-shiftable?
 
 			P.Make_p_hist(df, price)
-			P.consumption_plot(price=price, app=consumption, app_names=app_names)
+
+			consumption_plot(price=price, app=, non_app=, app_names=, non_app_names=)
+
+			#P.consumption_plot(price=price, app=consumption, app_names=app_names)
 			#P.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
 			plt.show()
 

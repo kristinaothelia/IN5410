@@ -86,28 +86,33 @@ def applications_Task3(df, households):
     # Number of appliances
     n_app    = len(non_shiftable) + len(shiftable_set) + len(shiftable_ran_)
 
-    # Disse stemmer ikke lengre, siden noe fjernes...
-    alpha    = df['Alpha'].values          # Lower bounce. Set-up time
-    print(alpha)
-    beta     = df['Beta'].values           # Upper bounce. Deadline
-    length   = df['Length [h]'].values     # Length: Power use per day [h]
-
-    alpha    = non_shiftable['Alpha'].values   # Lower bounce. Set-up time
+    alpha    = non_shiftable['Alpha'].values        # Lower bounce. Set-up time
     alpha_s  = shiftable_set['Alpha'].values
     alpha_r  = shiftable_ran['Alpha'].values
-    print(alpha)
-    print(alpha_s)
-    print(alpha_r)
+    #print(alpha)
+    #print(alpha_s)
+    #print(alpha_r)
+    beta     = non_shiftable['Beta'].values         # Upper bounce. Deadline
+    beta_s   = shiftable_set['Beta'].values
+    beta_r   = shiftable_ran['Beta'].values
 
-    """
-    return  n_app, app_names,
-            shiftable_set, shiftable_set_names,
-            shiftable_ran_, shiftable_ran_names,
-            non_shiftable, non_shiftable_names,
-            alpha, beta, length  # Alpha osv maa skaleres naa? pga shiftable_ran_ er forskjellig???
-    """
-    return n_app, shiftable_set, shiftable_ran_, non_shiftable
+    length   = non_shiftable['Length [h]'].values   # Power use per day [h]
+    length_s = shiftable_set['Length [h]'].values
+    length_r = shiftable_ran['Length [h]'].values
 
+    # Test:
+    alpha_combined = []
+    alpha_combined.append(alpha)
+    alpha_combined.append(alpha_s)
+    alpha_combined.append(alpha_r)
+    print(list(alpha_combined))         # æææææææææææææææææææææææææææ!!!
+
+
+    # Maa returnere kombinerte alpha, beta, length lister
+    # Maa ogsaa returnere kombinerte pandas frames for appliances?
+    return  n_app, alpha, alpha_s, alpha_r, beta, beta_s, beta_r, \
+            length, length_s, length_r, non_shiftable, non_shiftable_names, \
+            shiftable_set, shiftable_set_names, shiftable_ran_, shiftable_ran_names
 
 
 def random_appliances(shiftable_ran, optional):

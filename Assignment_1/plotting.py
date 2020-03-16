@@ -41,11 +41,11 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
 
     not None => True. None means none, not zero or False
 
-    price           |
-    app             |
-    app_names       |
-    non_app         |
-    non_app_names   |
+    price           | c
+    app             | Shiftable appliances
+    app_names       | Shiftable appliances - names
+    non_app         | Non-shiftable appliances
+    non_app_names   | Non-shiftable appliances - names
     """
 
     fig, ax = plt.subplots(1, 1, figsize=(10,6))    # ax = consumption fig.
