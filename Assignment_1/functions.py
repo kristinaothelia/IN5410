@@ -10,7 +10,7 @@ from numpy.random           import RandomState
 # -----------------------------------------------------------------------------
 
 seed = 100
-#seed = 3210
+seed = 3210
 rs   = RandomState(seed)
 
 def Get_df(file_name='/energy_use.xlsx'):

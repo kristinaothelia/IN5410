@@ -29,7 +29,7 @@ def Make_p_hist(df, price):
         plt.title("Time of Use [ToU]", fontsize='16', weight='bold')
         plt.savefig("Figures/Task1_hist.png")
     else:
-        plt.title("Time of Use [RTP]", fontsize='16', weight='bold')
+        plt.title("Real Time Pricing [RTP]", fontsize='16', weight='bold')
         plt.savefig("Figures/Task2_hist.png")
     #plt.show()
 
@@ -60,13 +60,18 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
     """
     bins    = np.arange(0, length)
     width   = 0.9
-    bottom  = np.zeros(length)      # HVA BRUKES DENNE TIL?
+    bottom  = np.zeros(length)
+
+    #cmap = plt.get_cmap('hsv')
+    #colors = [cmap(i) for i in np.linspace(0, 1, len(app)+1)]
+
+    colors = ['firebrick','springgreen','yellow','slategray','magenta','khaki','orangered','slateblue','blue','lime','purple','green','red','saddlebrown','darkturquoise','black']
 
     # Iterate over (shiftable) appliances to create stacked bars for the hist.
     if app is not None:
         for i in range(len(app)):
 
-            ax.bar(bins, app[i], width=width, bottom=bottom, label=app_names[i])
+            ax.bar(bins, app[i], color=colors[i], width=width, bottom=bottom, label=app_names[i])
             bottom = np.add(bottom, app[i])
 
     # Iterate over (non-shift.) appliances to create stacked bars for the hist.
