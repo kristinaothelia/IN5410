@@ -67,15 +67,15 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
 
     colors = ['firebrick','springgreen','yellow','slategray','magenta','khaki','orangered','slateblue','blue','lime','purple','green','red','saddlebrown','darkturquoise','black']
 
-    # Iterate over (shiftable) appliances to create stacked bars for the hist.
+    # Iterate over shiftable appliances to create stacked bars for the hist.
     if app is not None:
         for i in range(len(app)):
 
             ax.bar(bins, app[i], color=colors[i], width=width, bottom=bottom, label=app_names[i])
             bottom = np.add(bottom, app[i])
 
-    # Iterate over (non-shift.) appliances to create stacked bars for the hist.
-    if non_app is not None:     # is not 0
+    # Iterate over non-shift. appliances to create stacked bars for the hist.
+    if non_app is not None:  
         for i in range(len(non_app)):
 
             ax.bar(bins, non_app[i], width=width, bottom=bottom, label=non_app_names[i])

@@ -68,9 +68,10 @@ def applications_Task3(df, households):
 
     # Make sure only a fraction of the households have an EV
     #print(shiftable_set[shiftable_set.index == 'EV'])
-
     EV = random.randint(0, 1)
     if EV == 0:
+        # Dette vil ikke funke om excel filen endres.
+        # Burde bruke shiftable_set[shiftable_set.index == 'EV'] greier...
         shiftable_set = shiftable_set[:-1]
     shiftable_set_names = shiftable_set.index.values
 
@@ -80,40 +81,35 @@ def applications_Task3(df, households):
     while len(optional) < 2:
         random_appliances(shiftable_ran, optional)
 
-    shiftable_ran_ = pd.DataFrame(optional)
+    shiftable_ran_      = pd.DataFrame(optional)
     shiftable_ran_names = shiftable_ran_.index.values
 
+    shiftable_combined  = pd.concat([shiftable_set, shiftable_ran_]) #, axis=0
+    shiftable_c_names   = shiftable_combined.index.values
+
     # Number of appliances
-    n_app    = len(non_shiftable) + len(shiftable_set) + len(shiftable_ran_)
+    n_app    = len(non_shiftable) + len(shiftable_combined)
+
+    alpha    = non_shiftable['Alpha'].values        # Lower bounce. Set-up time
+    alpha_c  = shiftable_combined['Alpha'].values
+
+    beta     = non_shiftable['Beta'].values         # Upper bounce. Deadline
+    beta_c   = shiftable_combined['Beta'].values
+
+    length   = non_shiftable['Length [h]'].values   # Power use per day [h]
+    length_c = shiftable_combined['Length [h]'].values
 
     alpha    = non_shiftable['Alpha'].values        # Lower bounce. Set-up time
     alpha_s  = shiftable_set['Alpha'].values
-    alpha_r  = shiftable_ran['Alpha'].values
-    #print(alpha)
-    #print(alpha_s)
-    #print(alpha_r)
-    beta     = non_shiftable['Beta'].values         # Upper bounce. Deadline
-    beta_s   = shiftable_set['Beta'].values
-    beta_r   = shiftable_ran['Beta'].values
 
-    length   = non_shiftable['Length [h]'].values   # Power use per day [h]
-    length_s = shiftable_set['Length [h]'].values
-    length_r = shiftable_ran['Length [h]'].values
-
-    # Test:
-    alpha_combined = []
-    alpha_combined.append(alpha)
-    alpha_combined.append(alpha_s)
-    alpha_combined.append(alpha_r)
-    print(list(alpha_combined))         # æææææææææææææææææææææææææææ!!!
+    alpha_combined     = np.concatenate([alpha, alpha_c]).astype(int)
+    beta_combined      = np.concatenate([beta, beta_c]).astype(int)
+    length_combined    = np.concatenate([length, length_c]).astype(int)
 
 
-    # Maa returnere kombinerte alpha, beta, length lister
-    # Maa ogsaa returnere kombinerte pandas frames for appliances?
-    return  n_app, alpha, alpha_s, alpha_r, beta, beta_s, beta_r, \
-            length, length_s, length_r, non_shiftable, non_shiftable_names, \
-            shiftable_set, shiftable_set_names, shiftable_ran_, shiftable_ran_names
-
+    return  n_app, alpha_combined, beta_combined, length_combined, \
+            non_shiftable, non_shiftable_names, shiftable_combined, \
+            shiftable_c_names
 
 def random_appliances(shiftable_ran, optional):
 
