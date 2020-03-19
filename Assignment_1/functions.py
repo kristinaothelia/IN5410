@@ -45,7 +45,6 @@ def applications(df):
     return n_app, app_names, shiftable, non_shiftable, alpha, beta, length
 
 
-# OBSOBSOBS !!! Denne er ikke ferdig. Task 3
 def applications_Task3(df, households):
     """
     Function that returns appliances data
@@ -54,10 +53,6 @@ def applications_Task3(df, households):
     The last 6 shiftable appliances are randomly selected for the households
     At least 4 of these in each household.
     """
-
-    # Disse stemmer ikke lengre, siden noe fjernes...
-    #n_app         = len(df)                     # Number of appliances
-    #app_names     = df.index.values
 
     # Get variables from the Excel file
     non_shiftable = df[df['Shiftable'] == 0]    # Non-shiftable appliances
@@ -68,11 +63,16 @@ def applications_Task3(df, households):
 
     # Make sure only a fraction of the households have an EV
     #print(shiftable_set[shiftable_set.index == 'EV'])
+
     EV = random.randint(0, 1)
+    EV_nr = 0
     if EV == 0:
         # Dette vil ikke funke om excel filen endres.
         # Burde bruke shiftable_set[shiftable_set.index == 'EV'] greier...
         shiftable_set = shiftable_set[:-1]
+    else:
+        EV_nr = 1
+
     shiftable_set_names = shiftable_set.index.values
 
     # Now make a random selection of optional shiftable appliances,
@@ -109,7 +109,7 @@ def applications_Task3(df, households):
 
     return  n_app, alpha_combined, beta_combined, length_combined, \
             non_shiftable, non_shiftable_names, shiftable_combined, \
-            shiftable_c_names
+            shiftable_c_names, EV_nr
 
 def random_appliances(shiftable_ran, optional):
 

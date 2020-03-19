@@ -48,16 +48,10 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
     non_app_names   | Non-shiftable appliances - names
     """
 
-    fig, ax = plt.subplots(1, 1, figsize=(10,6))    # ax = consumption fig.
+    fig, ax = plt.subplots(1, 1, figsize=(9,7))    # ax = consumption fig.
+    #fig, ax = plt.subplots(1, 1, figsize=(10,6))    # ax = consumption fig.
     length  = len(price)
-    """
-    if app is not None:
-        length = len(app[0]) # Length of the first appliance
-    elif non_app is not None:
-        length = len(non_app[0])
-    else: # elif price is not None:
-        length = len(price)
-    """
+
     bins    = np.arange(0, length)
     width   = 0.9
     bottom  = np.zeros(length)
@@ -66,20 +60,25 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
     #colors = [cmap(i) for i in np.linspace(0, 1, len(app)+1)]
 
     colors = ['firebrick','springgreen','yellow','slategray','magenta','khaki','orangered','slateblue','blue','lime','purple','green','red','saddlebrown','darkturquoise','black']
-
+    Tot = 0
     # Iterate over shiftable appliances to create stacked bars for the hist.
     if app is not None:
         for i in range(len(app)):
 
             ax.bar(bins, app[i], color=colors[i], width=width, bottom=bottom, label=app_names[i])
             bottom = np.add(bottom, app[i])
+            Tot += app[i]
 
     # Iterate over non-shift. appliances to create stacked bars for the hist.
-    if non_app is not None:  
+    if non_app is not None:
         for i in range(len(non_app)):
 
             ax.bar(bins, non_app[i], width=width, bottom=bottom, label=non_app_names[i])
             bottom = np.add(bottom, non_app[i])
+            Tot += non_app[i]
+
+    # Make a max power load line
+    plt.axhline(y=max(Tot), color='r', linestyle='--', label='Max power load = %0.1f kW' % max(Tot))
 
     # Set title and x/y-label
     ax.set_title('Household consumption ', fontweight='bold', size=16)
@@ -98,73 +97,91 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
         p_line.set_ylabel('Price [NOK/kWh]', fontsize=16)
         ax.set_axisbelow(True)
 
+    """
     # Make the legend without border, and on the right side of the plot
     handles_con, labels_con     = ax.get_legend_handles_labels()
     handles_price, labels_price = p_line.get_legend_handles_labels()
 
     ax.legend(bbox_to_anchor=(1.125, 1),     loc=2, frameon=False, fontsize=15)
     p_line.legend(bbox_to_anchor=(1.125, 0), loc=2, frameon=False, fontsize=15)
+    """
+
+    #handles_con, labels_con     = ax.get_legend_handles_labels()
+    #handles_price, labels_price = p_line.get_legend_handles_labels()
+
+    #ax.legend(loc='upper center', bbox_to_anchor=(0.5,-0.1), frameon=False, fontsize=15, ncol=3)
+    p_line.legend(loc='upper center', bbox_to_anchor=(0.884, 1.2), frameon=False, fontsize=13)
+    #p_line.legend(loc='upper left', frameon=False, fontsize=13)
+    #p_line.legend(loc='best', frameon=False, fontsize=13)
+    ax.legend(loc='lower left', bbox_to_anchor= (0.0, 1.1), ncol=3, borderaxespad=0, frameon=False, fontsize=13)
+
+    #text = ax.text(-0.2,1.05, "Aribitrary text", transform=ax.transAxes)
+    #lgd = ax.legend(handles_con, labels_con, loc='upper center', bbox_to_anchor=(0.5,-0.1))
 
     plt.tight_layout()
+    #fig.savefig('samplefigure', bbox_extra_artists=(lgd,text), bbox_inches='tight', ncol=3)
     #plt.show()
 
 
-"""
-# Fra torsdag
-def consumption_plot(shift=None, nonshift=None, shiftnames=None, nonshiftnames=None, price=None):
 
-    f, consumptionfig = plt.subplots(1, 1, figsize=(10,6))
+def consumption_plot_Task3(price, EV, app=None, non_app=None, app_names=None, non_app_names=None):
+    """
+    Generate a histogram plot of the appliance consumption, including a
+    graphical line of the pricing scheme
 
-    if shift is not None:
-        length = len(shift[0])
-    elif nonshift is not 0:
-        length = len(nonshift[0])
-    elif price is not None:
-        length = len(price)
+    This function only plotts non-shiftable and shiftable consumption!
+
+    price           | c
+    app             | Shiftable appliances
+    app_names       | Shiftable appliances - names
+    non_app         | Non-shiftable appliances
+    non_app_names   | Non-shiftable appliances - names
+    """
+
+    #fig, ax = plt.subplots(1, 1, figsize=(10,6))    # ax = consumption fig.
+    fig, ax = plt.subplots(1, 1, figsize=(9,6))    # ax = consumption fig.
+    length  = len(price)
 
     bins    = np.arange(0, length)
     width   = 0.9
     bottom  = np.zeros(length)
 
-    #iterate over shiftable and nonshiftable appliances to create stacked
-    # bars for the chart.
-    if nonshift is not 0:
-        for i in range(len(nonshift)):
-            consumptionfig.bar(bins, nonshift[i], width=width, bottom=bottom,label=nonshiftnames[i])
-            bottom = np.add(bottom, nonshift[i])
+    # Plot histogram/bars for non-shiftable and shiftable app.
+    if non_app is not None:
+        ax.bar(bins, non_app, width=width, bottom=bottom, label=non_app_names)
+        bottom = np.add(bottom, non_app)
 
-    if shift is not None:
-        for i in range(len(shift)):
-            consumptionfig.bar(bins, shift[i], width=width, bottom=bottom,label=shiftnames[i])
-            bottom = np.add(bottom, shift[i])
+    if app is not None:
+        ax.bar(bins, app, width=width, bottom=bottom, label=app_names)
+        bottom = np.add(bottom, app)
 
-    #consumptionfig.set(title='Consumption of households',xlabel='Hour',xticks=bins,ylabel='Consumption, kWh')
-    consumptionfig.set_title('Household consumption ', fontweight='bold', size=16)
-    consumptionfig.set_ylabel('Consumption [kWh]', fontsize=16)
-    consumptionfig.set_xlabel('Time [h]', fontsize=16)
-    consumptionfig.set(xticks=bins)
+    # Set title and x/y-label
+    ax.set_title('Neighborhood consumption (%g EVs)' %EV, fontweight='bold', size=16)
+    ax.set_ylabel('Consumption [kWh]', fontsize=16)
+    ax.set_xlabel('Time [h]', fontsize=16)
+    ax.set(xticks=bins)
 
-    #Making the figure pretty
-    consumptionfig.tick_params(axis="both", which="both", bottom="off",
-                               top="off", labelbottom="on", left="off",
-                               right="off", labelleft="on")
+    # Make a max power load line
+    Tot = app + non_app
+    plt.axhline(y=max(Tot), color='r', linestyle='--', label='Max power load = %0.1f kW' % max(Tot))
 
-    consumptionfig.set_axisbelow(True)
-    consumptionfig.grid(b=True, which='major', axis='y', color='#cccccc',linestyle='--')
 
+    # Place axis and make grid.
+    ax.set_axisbelow(True)
+    ax.grid(b=True, which='major', axis='y', color='#cccccc', linestyle='--')
+
+    # Make a line that reprecents the hourly pricing scheme, p_line
     if price is not None:
-        pricefig = consumptionfig.twinx()
-        pricefig.step(bins, price, color='black', where='mid', label='Price scheme')
-        pricefig.set_ylabel('Price [NOK/kWh]', fontsize=16)
-        consumptionfig.set_axisbelow(True)
+        p_line = ax.twinx()       # Create a twin axes sharing the x-axis
+        p_line.step(bins, price, color='black', where='mid', label='Price scheme')
+        p_line.set_ylabel('Price [NOK/kWh]', fontsize=16)
+        ax.set_axisbelow(True)
 
     # Make the legend without border, and on the right side of the plot
-    handles, labels = consumptionfig.get_legend_handles_labels()
-    handle, label =pricefig.get_legend_handles_labels()
-    consumptionfig.legend(bbox_to_anchor=(1.125, 1), loc=2, frameon=False,  fontsize=15)
-    pricefig.legend(bbox_to_anchor=(1.125, 0), loc=2, frameon=False, fontsize=15)
-    #consumptionfig.legend(bbox_to_anchor=(0.5, -0.35), loc=8, borderaxespad=0., fontsize=15)
+    #handles_con, labels_con     = ax.get_legend_handles_labels()
+    #handles_price, labels_price = p_line.get_legend_handles_labels()
+
+    ax.legend(loc='lower center', bbox_to_anchor= (0.5, 1.1), ncol=2, borderaxespad=0, frameon=False, fontsize=13)
+    p_line.legend(loc='lower center', bbox_to_anchor=(0.8, -0.175), ncol=2, frameon=False, fontsize=13)
 
     plt.tight_layout()
-    plt.show()
-"""

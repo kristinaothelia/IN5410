@@ -11,11 +11,10 @@ from random 				import seed
 
 # Python 3.7.4
 #------------------------------------------------------------------------------
-seed  = 5410
-
 df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
 hours = 24
 
+nr_non_shiftable = len(df[df['Shiftable'] == 0])
 
 if __name__ == '__main__':
 
@@ -113,30 +112,26 @@ if __name__ == '__main__':
 		print("--"*40); print("Task 3"); print("--"*40)
 		# ---------------------------------------------------------------------
 		households    = 30
-		non_shift_tot = np.zeros(hours)
-		shift_tot     = np.zeros(hours)
+
+		# Fill up arrays with total consumption for all households
+		Total_con_n = np.zeros(hours)		# Non-shiftable
+		Total_con_s = np.zeros(hours)		# Shiftable
 
 		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
 		price = func.Get_price(hours, seed=seed, ToU=False)
 		cost  = 0
 
+		# Skal alle husholdningene ha samme pris, eller skal dette genereres ulikt?
+		EV_number = 0
 		for i in range(households):
-
-			"""
-			n_app, alpha, alpha_s, alpha_r, beta, beta_s, beta_r, \
-		    length, length_s, length_r, non_shiftable, non_shiftable_names, \
-		    shiftable_set, shiftable_set_names, shiftable_ran, shiftable_ran_names \
-			= func.applications_Task3(df, households)
-
-			n_app, alpha_combined, beta_combined, length_combined, \
-		    non_shiftable, non_shiftable_names, shiftable_set, \
-		    shiftable_set_names, shiftable_ran, shiftable_ran_names \
-			= func.applications_Task3(df, households)
-			"""
+			df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
 
 			n_app, alpha, beta, length, non_shiftable, non_shiftable_names, \
-			shiftable_combined, shiftable_c_names \
+			shiftable_combined, shiftable_c_names, EV_nr \
 			= func.applications_Task3(df, households)
+
+			if EV_nr == 1:
+				EV_number += 1
 
 			# Creating intervals
 			intervals = func.interval_severeal_app(n_app, length, alpha, beta, shuffle=False)
@@ -150,37 +145,42 @@ if __name__ == '__main__':
 			res 		= linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
 			consumption = res.x.reshape(n_app, hours)
 
+			non_s_con = consumption[:nr_non_shiftable]
+			shift_con = consumption[nr_non_shiftable:]
+
 			cost += res.fun
-			print("Minimized cost: %.3f" % res.fun)
 
-			#non_shift_tot = np.sum(total_nonshift, axis=0)
-			#shift_tot     = np.sum(total_nonshift, axis=0)
+			#print(res.message)
+			#print("Status: ", res.status)
+			print("House %g, Minimized cost: %.3f" % (i+1, res.fun))
 
-			#total_shift    = [shift for shift in shift_consumption]
-		    #total_nonshift = [nonshift for nonshift in nonshift_consumption]
+			non_shift_tot = np.sum(non_s_con, axis=0)
+			#print('Total hourly consumption for non-shiftable app.', '\n', non_shift_tot)
 
-			P.consumption_plot(price=price, app=shiftable_combined, non_app=non_shiftable, app_names=shiftable_c_names, non_app_names=non_shiftable_names)
-			sys.exit()
+			shift_tot    = np.sum(shift_con, axis=0)
+			#print('Total hourly consumption for shiftable app.', '\n', shift_tot)
 
-		print(cost)
+			Total_con_n  += non_shift_tot
+			Total_con_s  += shift_tot
+
+			# Lagre bilde for hver husholdning??
+			#plt.savefig("Household%g" %(i+1))
 
 
-		"""
 		if Plot == True:
 
-			# Only need to plot combined shiftable and non-shiftable?
-
 			P.Make_p_hist(df, price)
-
-			P.consumption_plot(price=price, app=shiftable_combined, non_app=non_shiftable, app_names=shiftable_c_names, non_app_names=non_shiftable_names)
-
-			#P.consumption_plot(price=price, app=consumption, app_names=app_names)
-			#P.consumption_plot(shift=consumption, price=price, nonshift=0, shiftnames=app_names)
+			P.consumption_plot_Task3(price=price, EV=EV_number, \
+									 app=Total_con_s, 			\
+									 app_names='Shiftable applications', 	\
+									 non_app=Total_con_n, 		\
+									 non_app_names='Non-shiftable applications')
 			plt.show()
 
 		else:
-			#print(res)
-			print(res.message)
-			print("Status: ", res.status)
-			print("Minimized cost: %.3f" % res.fun)
-		"""
+
+			print('Neighborhood:')
+			print(Total_con_n, '----')
+			print(Total_con_s, '--')
+			print('Cost: ', cost)
+			print('EVs:  ', EV_number)
