@@ -148,12 +148,6 @@ if __name__ == '__main__':
 			non_s_con = consumption[:nr_non_shiftable]
 			shift_con = consumption[nr_non_shiftable:]
 
-			cost += res.fun
-
-			#print(res.message)
-			#print("Status: ", res.status)
-			print("House %g, Minimized cost: %.3f" % (i+1, res.fun))
-
 			non_shift_tot = np.sum(non_s_con, axis=0)
 			#print('Total hourly consumption for non-shiftable app.', '\n', non_shift_tot)
 
@@ -165,6 +159,12 @@ if __name__ == '__main__':
 
 			# Lagre bilde for hver husholdning??
 			#plt.savefig("Household%g" %(i+1))
+
+			cost += res.fun
+
+			#print(res.message)
+			#print("Status: ", res.status)
+			print("House %g, Minimized cost: %.3f" % (i+1, res.fun))
 
 
 		if Plot == True:
