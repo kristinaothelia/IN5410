@@ -205,11 +205,11 @@ def interval_severeal_app(n_app, length, alpha, beta, shuffle=False):
 def linprog_input(df, n_app, price, intervals, hours=24):
     """
     Function returning the inputs needed in linprog
-    c       | Write what they are
-    A_eq    |
+    c       | The coefficients of the linear objective function to be minimized
+    A_eq    | The equality constraint matrix
     b_eq    | Daily usage [kW]
-    A_ub    |
-    b_ub    |
+    A_ub    | The inequality constraint matrix
+    b_ub    | The inequality constraint vector
     """
 
     c = np.array(price*len(df))

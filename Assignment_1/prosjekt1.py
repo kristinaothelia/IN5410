@@ -1,18 +1,22 @@
-import os, random, xlsxwriter, sys, argparse
+import os, random, xlsxwriter, sys, argparse, warnings, excel2img
 
 import matplotlib.pyplot 	as plt
 import numpy               	as np
 import pandas               as pd
 import functions 		   	as func
 import plotting 			as P
+import seaborn as sns
 
 from scipy.optimize 		import linprog
 from random 				import seed
+from pandas.plotting 		import table 
 
 # Python 3.7.4
 #------------------------------------------------------------------------------
 df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
 hours = 24
+
+print(df)
 
 nr_non_shiftable = len(df[df['Shiftable'] == 0])
 
@@ -28,20 +32,30 @@ if __name__ == '__main__':
 	# Optional argument for plotting
 	parser.add_argument('-X', '--plot', action='store_true', help="Plotting", required=False)
 
+	# Optional argument for printing out possible warnings
+	parser.add_argument('-W', '--warnings', action='store_true', help="Warnings", required=False)
+
 	if len(sys.argv) <= 1:
 		sys.argv.append('--help')
 
-	args   = parser.parse_args()
+	args  = parser.parse_args()
 
-	Task1  = args.Task1
-	Task2  = args.Task2
-	Task3  = args.Task3
-	Plot   = args.plot
+	Task1    = args.Task1
+	Task2    = args.Task2
+	Task3    = args.Task3
+	Plot     = args.plot
+	Warnings = args.warnings
+
+	if not Warnings:
+		# If the argument -W / --warnings is provided, 
+		# any warnings will be printed in the terminal
+		warnings.filterwarnings("ignore")
 
 	if Task1 == True:
 
-		print("--"*40); print("Task 1"); print("--"*40)
-		# ---------------------------------------------------------------------
+		print(''); print("=="*44)
+		print("Task 1: A simple household with 3 shiftable appliances (washing machine, EV, dishwasher)")
+		print("=="*44, '\n')
 
 		# Only look at appliances: Dishwasher, LM and EV
 		#df = df[-3:]
@@ -71,13 +85,14 @@ if __name__ == '__main__':
 			#print(res)
 			print(res.message)
 			print("Status: ", res.status)
-			print("Minimized cost: %.3f" % res.fun)
+			print("Minimized cost: %.3f NOK" % res.fun)
 
 
 	elif Task2 == True:
 
-		print("--"*40); print("Task 2"); print("--"*40)
-		# ---------------------------------------------------------------------
+		print(''); print("=="*39)
+		print("Task 2: A household with shiftable and non_shiftable appliances and RTP scheme")
+		print("=="*39, '\n')
 
 		n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications(df)
 
@@ -104,14 +119,16 @@ if __name__ == '__main__':
 			#print(res)
 			print(res.message)
 			print("Status: ", res.status)
-			print("Minimized cost: %.3f" % res.fun)
+			print("Minimized cost: %.3f NOK" % res.fun)
 
 
 	elif Task3 == True:
 
-		print("--"*40); print("Task 3"); print("--"*40)
-		# ---------------------------------------------------------------------
-		households    = 30
+		print(''), print("="*79)
+		print("Task 3: A small neighborhood where only a fraction of the households owns an EV")
+		print("="*79, '\n')
+
+		households  = 30
 
 		# Fill up arrays with total consumption for all households
 		Total_con_n = np.zeros(hours)		# Non-shiftable
@@ -122,7 +139,12 @@ if __name__ == '__main__':
 		cost  = 0
 
 		# Skal alle husholdningene ha samme pris, eller skal dette genereres ulikt?
-		EV_number = 0
+		EV_number	 = 0
+		house_nr     = []
+		cost_nr  	 = []
+		hav_nonshift = []
+		hav_shift    = []
+
 		for i in range(households):
 			df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
 
@@ -151,8 +173,13 @@ if __name__ == '__main__':
 			non_shift_tot = np.sum(non_s_con, axis=0)
 			#print('Total hourly consumption for non-shiftable app.', '\n', non_shift_tot)
 
+
 			shift_tot    = np.sum(shift_con, axis=0)
 			#print('Total hourly consumption for shiftable app.', '\n', shift_tot)
+
+			# Average hourly consumption of the household, ha med dette??
+			hav_nonshift.append(np.sum(non_shift_tot)/hours)
+			hav_shift.append(np.sum(non_shift_tot)/hours)
 
 			Total_con_n  += non_shift_tot
 			Total_con_s  += shift_tot
@@ -164,8 +191,25 @@ if __name__ == '__main__':
 
 			#print(res.message)
 			#print("Status: ", res.status)
-			print("House %g, Minimized cost: %.3f" % (i+1, res.fun))
+			if i < 9:
+				print("House %g,  Minimized cost: %.3f NOK" % (i+1, res.fun))
+			else:
+				print("House %g, Minimized cost: %.3f NOK" % (i+1, res.fun))
 
+			house_nr.append(i+1)
+			cost_nr.append('%.3f' %res.fun)
+
+		# skal vi ha noe saant? Kanskje med andre ting?  EV, shiftable/not
+		# legge i funksjon
+		list_of_tuples = list(zip(hav_nonshift, hav_shift, cost_nr))
+		result_table   = pd.DataFrame(list_of_tuples, index=house_nr,\
+					     columns = ['Non-shiftable', 'Shiftable', 'Minimized cost [NOK]'])
+
+		result_table.to_excel('result_table.xlsx', float_format="%.3f", index_label='House')
+
+		excel2img.export_img("result_table.xlsx","somesome.png")  # pip install excel2img
+
+\
 
 		if Plot == True:
 
@@ -179,8 +223,12 @@ if __name__ == '__main__':
 
 		else:
 
-			print('Neighborhood:')
-			print(Total_con_n, '----')
-			print(Total_con_s, '--')
-			print('Cost: ', cost)
-			print('EVs:  ', EV_number)
+			print(''); print('-'*47)
+			print('Consumption and total cost for the Neighborhood')
+			print('-'*47, '\n')
+			print('Consumption of the non-shiftable appliances for each household:', '\n')
+			print(Total_con_n, '\n')
+			print('Consumption of the shiftable appliances for each household:', '\n')
+			print(Total_con_s, '\n')
+			print('Total cost for the neighborhood: %.3f NOK' %cost)
+			print('Number of EVs: ', EV_number)
