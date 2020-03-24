@@ -205,6 +205,7 @@ if __name__ == '__main__':
 		result_table   = pd.DataFrame(list_of_tuples, index=house_nr,\
 					     columns = ['Non-shiftable', 'Shiftable', 'Minimized cost [NOK]'])
 
+		 
 		result_table.to_excel('result_table.xlsx', float_format="%.3f", index_label='House')
 
 		excel2img.export_img("result_table.xlsx","somesome.png")  # pip install excel2img
