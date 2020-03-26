@@ -1,6 +1,6 @@
 # IN5410 - Assignment 1: Functions
 # -----------------------------------------------------------------------------
-import os, random, xlsxwriter, sys, random
+import os, random, xlsxwriter, sys, random, excel2img
 
 import pandas               as pd
 import numpy                as np
@@ -227,11 +227,11 @@ def linprog_input(df, n_app, price, intervals, hours=24):
             A_eq[i,j+(hours*i)] = intervals[i][j]
 
     # ????
-    A_mul = np.zeros((hours,n_app*hours))
-    for i in range(A_mul.shape[0]):
-        A_mul[i,i::hours] = 1
-    A_one = np.eye(n_app*hours)
-    A_ub  = np.concatenate((A_one,A_mul),axis=0)
+    A_ = np.zeros((hours,n_app*hours))
+    for i in range(A_.shape[0]):
+        A_[i,i::hours] = 1
+    A_id = np.eye(n_app*hours)
+    A_ub  = np.concatenate((A_id,A_),axis=0)
 
     b = []
     for i in energy_hour:
@@ -240,3 +240,148 @@ def linprog_input(df, n_app, price, intervals, hours=24):
     b_ub = np.concatenate((b, E_tot))
 
     return c, A_eq, b_eq, A_ub, b_ub
+
+def calc_households(nr_non_shiftable, households=30, hours=24, make_result_table=True):
+    """
+    """
+
+    # Fill up arrays with total consumption for all households
+    Total_con_n = np.zeros(hours)       # Non-shiftable
+    Total_con_s = np.zeros(hours)       # Shiftable
+
+    # Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
+    price = Get_price(hours, seed=seed, ToU=False)
+    cost  = 0
+
+    # Skal alle husholdningene ha samme pris, eller skal dette genereres ulikt?
+    EV_number    = 0
+    house_nr     = []
+    cost_nr      = []
+    hav_nonshift = []
+    hav_shift    = []
+    EV_yes_no    = []
+
+    for i in range(households):
+        df    = Get_df(file_name='/energy_use.xlsx')   # Get data for appliances
+
+        n_app, alpha, beta, length, non_shiftable, non_shiftable_names, \
+        shiftable_combined, shiftable_c_names, EV_nr \
+        = applications_Task3(df, households)
+
+        if EV_nr == 1:
+            EV_number += 1
+            EV_yes_no.append('Yes')
+        else:
+            EV_yes_no.append('No')
+
+        # Creating intervals
+        intervals = interval_severeal_app(n_app, length, alpha, beta, shuffle=False)
+
+        df = pd.concat((non_shiftable, shiftable_combined))
+
+        # Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
+        c, A_eq, b_eq, A_ub, b_ub = linprog_input(df, n_app, price, intervals, hours)
+
+        # Make linprog calculations
+        res         = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
+        consumption = res.x.reshape(n_app, hours)
+
+        non_s_con = consumption[:nr_non_shiftable]
+        shift_con = consumption[nr_non_shiftable:]
+
+        non_shift_tot = np.sum(non_s_con, axis=0)
+        #print('Total hourly consumption for non-shiftable app.', '\n', non_shift_tot)
+
+
+        shift_tot    = np.sum(shift_con, axis=0)
+        #print('Total hourly consumption for shiftable app.', '\n', shift_tot)
+
+        # Average hourly consumption of the household, ha med dette??
+        hav_nonshift.append(np.sum(non_shift_tot)/hours)
+        hav_shift.append(np.sum(non_shift_tot)/hours)
+
+        Total_con_n  += non_shift_tot
+        Total_con_s  += shift_tot
+
+        # Lagre bilde for hver husholdning??
+        #plt.savefig("Household%g" %(i+1))
+
+        cost += res.fun
+
+        #print(res.message)
+        #print("Status: ", res.status)
+        if i < 9:
+            print("House %g,  Minimized cost: %.3f NOK" % (i+1, res.fun))
+        else:
+            print("House %g, Minimized cost: %.3f NOK" % (i+1, res.fun))
+
+        #house_nr.append('House ' + '%g' %(i+1))
+        house_nr.append(i+1)
+        cost_nr.append('%.3f' %res.fun)
+
+    if make_result_table == True:
+        result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr)
+
+
+    return df, price, EV_number, Total_con_s, Total_con_n, cost
+
+def result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr):
+    """
+    A function which creates a Pandas DataFrame with the household results,
+    and export the DataFrame as an excel-file, a LaTex-table and a png-image:
+    result_table.xlsx
+    latex_table.tex
+    result_figure.png
+    """
+
+
+    list_of_tuples = list(zip(hav_nonshift, hav_shift, cost_nr, EV_yes_no))
+    result_table   = pd.DataFrame(list_of_tuples,index=house_nr,\
+                         columns = ['Non-shiftable [kW/h]', 'Shiftable [kW/h]', 'Minimized cost [NOK]', 'EV'])
+
+    l = len(result_table)         # length of table
+    w = len(result_table.columns) # widt of table
+
+    writer   = pd.ExcelWriter('result_table.xlsx', engine='xlsxwriter')
+    result_table.to_excel(writer, sheet_name='task3', float_format="%.3f", index_label='House')
+    workbook = writer.book
+
+    # Creating workbook format to center values
+    format1     = workbook.add_format({'align': 'center','bold': False})
+
+    # Creating worksheet to edit edit colums and add formats 
+    worksheet   = writer.sheets['task3']
+    worksheet.set_column('B:E', None, format1)
+    worksheet.set_column('B:B', 18, None)
+    worksheet.set_column('D:D', 18, None)
+    worksheet.set_column('C:C', 16, None)
+
+    house_format  = workbook.add_format({'bottom':2, 'top':5, 'left':5, 'right':1, 'bg_color': '#C6EFCE'})
+    header_format = workbook.add_format({'bottom':2, 'top':5, 'left':0, 'right':2, 'bg_color': '#C6EFCE'})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, l, 0), {'type': 'no_errors', 'format': house_format})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, w), {'type': 'no_errors', 'format': header_format})
+    #house_format_b  = workbook.add_format({'bottom':1})
+    #worksheet.conditional_format(xlsxwriter.utility.xl_range(1, 0, l, 0), {'type': 'no_errors', 'format': house_format_b})
+    
+    '''
+    right_border  = workbook.add_format({'bottom':0, 'top':0, 'left':0, 'right':5})
+    left_border  = workbook.add_format({'bottom':0, 'top':0, 'left':5, 'right':0})
+    bottom_border = workbook.add_format({'bottom':5, 'top':0, 'left':0, 'right':0})
+    top_border = workbook.add_format({'bottom':0, 'top':5, 'left':0, 'right':2})
+    last_column = workbook.add_format({'bottom':5, 'top':5, 'left':0, 'right':0})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(l, w, 0, w), {'type': 'no_errors', 'format': right_border})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(l, 0, 0, 0), {'type': 'no_errors', 'format': left_border})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(l, 0, l, 4), {'type': 'no_errors', 'format': bottom_border})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, 4), {'type': 'no_errors', 'format': top_border})
+    worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, 4), {'type': 'no_errors', 'format': last_column})
+    '''
+    writer.save()
+
+    # Easy result table 
+    #result_table.to_excel('result_table.xlsx', float_format="%.3f", index_label='House', engine='xlsxwriter')
+
+    # Creates a .tex table which can be imported to a latex document
+    latex_table = result_table.to_latex('latex_table.tex', float_format="%.3f")
+
+    # Exports a png image of the result table
+    excel2img.export_img('result_table.xlsx','result_figure.png')  # pip install excel2img

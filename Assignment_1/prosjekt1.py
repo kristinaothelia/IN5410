@@ -1,4 +1,4 @@
-import os, random, xlsxwriter, sys, argparse, warnings, excel2img
+import os, random, xlsxwriter, sys, argparse, warnings
 
 import matplotlib.pyplot 	as plt
 import numpy               	as np
@@ -9,10 +9,8 @@ import seaborn as sns
 
 from scipy.optimize 		import linprog
 from random 				import seed
-from pandas.plotting 		import table 
 
 
-#from StyleFrame import StyleFrame, Styler, utils
 # Python 3.7.4
 #------------------------------------------------------------------------------
 df 	  = func.Get_df(file_name='/energy_use.xlsx')	# Get data for appliances
@@ -132,6 +130,7 @@ if __name__ == '__main__':
 
 		households  = 30
 
+		'''
 		# Fill up arrays with total consumption for all households
 		Total_con_n = np.zeros(hours)		# Non-shiftable
 		Total_con_s = np.zeros(hours)		# Shiftable
@@ -205,42 +204,9 @@ if __name__ == '__main__':
 			#house_nr.append('House ' + '%g' %(i+1))
 			house_nr.append(i+1)
 			cost_nr.append('%.3f' %res.fun)
+		'''
 
-
-		# skal vi ha noe saant? Kanskje med andre ting?  EV, shiftable/not
-		# legge i funksjon
-		list_of_tuples = list(zip(hav_nonshift, hav_shift, cost_nr, EV_yes_no))
-		result_table   = pd.DataFrame(list_of_tuples,index=house_nr,\
-					     columns = ['Non-shiftable [kW/h]', 'Shiftable [kW/h]', 'Minimized cost [NOK]', 'EV'])
-
-
-		writer   = pd.ExcelWriter('result_table.xlsx', engine='xlsxwriter')
-		result_table.to_excel(writer, sheet_name='task3', float_format="%.3f", index_label='House')
-		workbook = writer.book
-
-
-		#full_border = workbook.add_format({'border':1, 'border_color':'#000000'})
-		# cant get border lines at the edges..... 
-		format1     = workbook.add_format({'align': 'center','bold': False})
-		format2     = workbook.add_format({'border':1})
-		worksheet   = writer.sheets['task3']
-		worksheet.set_column('B:E', None, format1)
-		worksheet.set_column('B:D', 18, None)
-		#worksheet.write('A3', '', format2)
-		border_fmt = workbook.add_format({'bottom':2, 'top':2, 'left':5, 'right':1})
-		#worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, len(result_table), len(result_table.columns)), {'type': 'no_errors', 'format': border_fmt})
-		worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 4, 0), {'type': 'no_errors', 'format': border_fmt})
-		writer.save()
-
-
-		#result_table.to_excel('result_table.xlsx', float_format="%.3f", index_label='House', engine='xlsxwriter')
-
-		# Creates a table which can be imported to a latex document
-		latex_table = result_table.to_latex('latex_table.tex', float_format="%.3f")
-
-		# Creates a png image of the result table
-		excel2img.export_img('result_table.xlsx','somesome.png')  # pip install excel2img
-
+		df, price, EV_number, Total_con_s, Total_con_n, cost = func.calc_households(nr_non_shiftable)
 
 		if Plot == True:
 
@@ -263,46 +229,3 @@ if __name__ == '__main__':
 			print(Total_con_s, '\n')
 			print('Total cost for the neighborhood: %.3f NOK' %cost)
 			print('Number of EVs: ', EV_number)
-
-
-'''
-# mer fancy excel fil
-writer = pd.ExcelWriter('result_table.xlsx', engine='xlsxwriter')
-		result_table.to_excel(writer, sheet_name='task3', float_format="%.3f", index_label='House', startrow=1, header=False)
-		workbook = writer.book
-		worksheet = writer.sheets['task3']
-
-		# Add a header format.
-		header_format = workbook.add_format({'bold': True,'text_wrap': True,'valign': 'center','fg_color': '#D7E4BC','border': 1})
-		# Write the column headers with the defined format.
-		for col_num, value in enumerate(result_table.columns.values):
-			worksheet.write(0, col_num + 1, value, header_format)
-			
-		writer.save()
-'''
-
-
-'''
-		writer = pd.ExcelWriter('result_table.xlsx', engine='xlsxwriter')
-		result_table.to_excel(writer, sheet_name='task3', float_format="%.3f", index_label='House')
-		workbook = writer.book
-		full_border = workbook.add_format({'border':1, 'border_color':'#000000'})
-		worksheet = writer.sheets['task3']
-		worksheet.write("B", None, full_border)
-		worksheet.set_column('B:D', 18)
-		writer.save()
-		'''
-
-		#result_table.style.set_table_styles([{'selector':'','props':[('border','4px solid #7a7')]}])
-
-'''
-writer = StyleFrame.ExcelWriter("result_table.xlsx")
-		result_table     = StyleFrame(result_table)
-
-		result_table.apply_column_style(cols_to_style=result_table.columns, styler_obj=Styler(bg_color=utils.colors.white, bold=True, font=utils.fonts.arial,font_size=8),style_header=True)
-
-		result_table.apply_headers_style(styler_obj=Styler(bg_color=utils.colors.blue, bold=True, font_size=8, font_color=utils.colors.white,number_format=utils.number_formats.general, protection=False))
-
-		result_table.to_excel(writer, sheet_name='Sheet1')
-		writer.save()
-'''
