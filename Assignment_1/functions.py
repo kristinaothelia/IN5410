@@ -77,9 +77,16 @@ def applications_Task3(df, households):
 
     # Now make a random selection of optional shiftable appliances,
     # where a household has 2-6 appliances
+
+    #n = random.randint(2, 6)
+
     optional = []
     while len(optional) < 2:
+        optional = []
         random_appliances(shiftable_ran, optional)
+
+    print(optional)
+
 
     shiftable_ran_      = pd.DataFrame(optional)
     shiftable_ran_names = shiftable_ran_.index.values
@@ -106,10 +113,10 @@ def applications_Task3(df, households):
     beta_combined      = np.concatenate([beta, beta_c]).astype(int)
     length_combined    = np.concatenate([length, length_c]).astype(int)
 
-
+    N_ = shiftable_ran_names
     return  n_app, alpha_combined, beta_combined, length_combined, \
             non_shiftable, non_shiftable_names, shiftable_combined, \
-            shiftable_c_names, EV_nr
+            shiftable_c_names, EV_nr, N_
 
 def random_appliances(shiftable_ran, optional):
 
@@ -119,7 +126,6 @@ def random_appliances(shiftable_ran, optional):
         # Add random appliances to the household
         if n == 1:
             optional.append(shiftable_ran.iloc[i])
-
 
 def Get_price(hours, seed, ToU=False):
     """
@@ -259,14 +265,36 @@ def calc_households(nr_non_shiftable, households=30, hours=24, make_result_table
     cost_nr      = []
     hav_nonshift = []
     hav_shift    = []
+    hav_tot      = []
     EV_yes_no    = []
+    Names        = [] # name of random shiftable appliances
 
     for i in range(households):
         df    = Get_df(file_name='/energy_use.xlsx')   # Get data for appliances
 
         n_app, alpha, beta, length, non_shiftable, non_shiftable_names, \
-        shiftable_combined, shiftable_c_names, EV_nr \
+        shiftable_combined, shiftable_c_names, EV_nr, N_ \
         = applications_Task3(df, households)
+
+
+        name_1 = ''
+        for navn in range(len(N_)):
+
+            if N_[navn] == 'Coffee maker ':
+                name_1 +=  'CM, '
+            elif N_[navn] == 'Microwave':
+                name_1 +=  'MW, '
+            elif N_[navn] == 'Cellphone charger':
+                name_1 +=  'CC, '
+            elif N_[navn] == 'Hair dryer':
+                name_1 +=  'HD, '
+            elif N_[navn] == 'Game console':
+                name_1 +=  'GC, '
+            elif N_[navn] == 'Wi-Fi router':
+                name_1 +=  'WiFi, '
+            else:
+                name_1 += N_[navn] + ', '
+        Names.append(name_1[:-2])
 
         if EV_nr == 1:
             EV_number += 1
@@ -291,14 +319,16 @@ def calc_households(nr_non_shiftable, households=30, hours=24, make_result_table
 
         non_shift_tot = np.sum(non_s_con, axis=0)
         #print('Total hourly consumption for non-shiftable app.', '\n', non_shift_tot)
-
-
         shift_tot    = np.sum(shift_con, axis=0)
         #print('Total hourly consumption for shiftable app.', '\n', shift_tot)
 
         # Average hourly consumption of the household, ha med dette??
-        hav_nonshift.append(np.sum(non_shift_tot)/hours)
-        hav_shift.append(np.sum(non_shift_tot)/hours)
+        # Tallene stemmer ikke...
+        #hav_nonshift.append(np.sum(non_shift_tot)/hours)
+        #hav_shift.append(np.sum(shift_tot)/hours)
+        hav_nonshift.append(np.sum(non_shift_tot))
+        hav_shift.append(np.sum(shift_tot))
+        hav_tot.append(np.sum(non_shift_tot)+np.sum(shift_tot))
 
         Total_con_n  += non_shift_tot
         Total_con_s  += shift_tot
@@ -311,21 +341,21 @@ def calc_households(nr_non_shiftable, households=30, hours=24, make_result_table
         #print(res.message)
         #print("Status: ", res.status)
         if i < 9:
-            print("House %g,  Minimized cost: %.3f NOK" % (i+1, res.fun))
+            print("House %g,  Minimized cost: %.1f NOK" % (i+1, res.fun))
         else:
-            print("House %g, Minimized cost: %.3f NOK" % (i+1, res.fun))
+            print("House %g, Minimized cost: %.1f NOK" % (i+1, res.fun))
 
         #house_nr.append('House ' + '%g' %(i+1))
         house_nr.append(i+1)
-        cost_nr.append('%.3f' %res.fun)
+        cost_nr.append('%.1f' %res.fun)
 
     if make_result_table == True:
-        result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr)
+        result_table(hav_nonshift, hav_shift, hav_tot, cost_nr, Names, EV_yes_no, house_nr)
 
 
     return df, price, EV_number, Total_con_s, Total_con_n, cost
 
-def result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr):
+def result_table(hav_nonshift, hav_shift, hav_tot, cost_nr, Names, EV_yes_no, house_nr):
     """
     A function which creates a Pandas DataFrame with the household results,
     and export the DataFrame as an excel-file, a LaTex-table and a png-image:
@@ -334,10 +364,9 @@ def result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr):
     result_figure.png
     """
 
-
-    list_of_tuples = list(zip(hav_nonshift, hav_shift, cost_nr, EV_yes_no))
+    list_of_tuples = list(zip(hav_nonshift, hav_shift, hav_tot, Names, cost_nr, EV_yes_no))
     result_table   = pd.DataFrame(list_of_tuples,index=house_nr,\
-                         columns = ['Non-shiftable [kW/h]', 'Shiftable [kW/h]', 'Minimized cost [NOK]', 'EV'])
+                         columns = ['Non-shiftable [kWh]', 'Shiftable [kWh]', 'Total [kWh]', 'Optional app.','Minimized cost [NOK]', 'EV'])
 
     l = len(result_table)         # length of table
     w = len(result_table.columns) # widt of table
@@ -348,13 +377,19 @@ def result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr):
 
     # Creating workbook format to center values
     format1     = workbook.add_format({'align': 'center','bold': False})
+    text_format = workbook.add_format({'text_wrap': True})
 
-    # Creating worksheet to edit edit colums and add formats 
+    #Columns.AutoFit()
+
+    # Creating worksheet to edit edit colums and add formats
     worksheet   = writer.sheets['task3']
-    worksheet.set_column('B:E', None, format1)
+    worksheet.set_column('B:D', None, format1)
+    worksheet.set_column('F:G', None, format1)
     worksheet.set_column('B:B', 18, None)
-    worksheet.set_column('D:D', 18, None)
-    worksheet.set_column('C:C', 16, None)
+    worksheet.set_column('C:C', 14, None)
+    worksheet.set_column('D:D', 12, None)
+    worksheet.set_column('E:E', 22, text_format)
+    worksheet.set_column('F:F', 18, None)
 
     house_format  = workbook.add_format({'bottom':2, 'top':5, 'left':5, 'right':1, 'bg_color': '#C6EFCE'})
     header_format = workbook.add_format({'bottom':2, 'top':5, 'left':0, 'right':2, 'bg_color': '#C6EFCE'})
@@ -362,7 +397,7 @@ def result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr):
     worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, w), {'type': 'no_errors', 'format': header_format})
     #house_format_b  = workbook.add_format({'bottom':1})
     #worksheet.conditional_format(xlsxwriter.utility.xl_range(1, 0, l, 0), {'type': 'no_errors', 'format': house_format_b})
-    
+
     '''
     right_border  = workbook.add_format({'bottom':0, 'top':0, 'left':0, 'right':5})
     left_border  = workbook.add_format({'bottom':0, 'top':0, 'left':5, 'right':0})
@@ -377,11 +412,11 @@ def result_table(hav_nonshift, hav_shift, cost_nr, EV_yes_no, house_nr):
     '''
     writer.save()
 
-    # Easy result table 
+    # Easy result table
     #result_table.to_excel('result_table.xlsx', float_format="%.3f", index_label='House', engine='xlsxwriter')
 
     # Creates a .tex table which can be imported to a latex document
-    latex_table = result_table.to_latex('latex_table.tex', float_format="%.3f")
+    latex_table = result_table.to_latex('latex_table.tex', float_format="%.2f")
 
     # Exports a png image of the result table
     excel2img.export_img('result_table.xlsx','result_figure.png')  # pip install excel2img
