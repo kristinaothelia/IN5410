@@ -207,7 +207,7 @@ def linprog_input(df, n_app, price, intervals, hours=24):
     Function returning the inputs needed in linprog
     c       | The coefficients of the linear objective function to be minimized
     A_eq    | The equality constraint matrix
-    b_eq    | Daily usage [kW]
+    b_eq    | The equality constraint vector, Daily usage [kW]
     A_ub    | The inequality constraint matrix
     b_ub    | The inequality constraint vector
     """
