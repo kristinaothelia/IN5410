@@ -55,10 +55,9 @@ if __name__ == '__main__':
 		print("=="*44, '\n')
 
 		# Only look at appliances: Dishwasher, LM and EV
-		#df = df[-3:]
 		df = df[7:10]
 
-		n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications(df)
+		n_app, app_names, alpha, beta, length = func.applications(df)
 
 		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
 		price = func.Get_price(hours, seed=seed, ToU=True)
@@ -73,16 +72,14 @@ if __name__ == '__main__':
 		res 		= linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
 		consumption = res.x.reshape(n_app,hours)
 
+		print(res.message)
+		print("Status: ", res.status)
+		print("Minimized cost: %.3f NOK" % res.fun)
+
 		if Plot == True:
 			P.Make_p_hist(df, price)
 			P.consumption_plot(price=price, app=consumption, app_names=app_names)
 			plt.show()
-
-		else:
-			#print(res)
-			print(res.message)
-			print("Status: ", res.status)
-			print("Minimized cost: %.3f NOK" % res.fun)
 
 
 	elif Task2 == True:
@@ -91,7 +88,7 @@ if __name__ == '__main__':
 		print("Task 2: A household with shiftable and non_shiftable appliances and RTP scheme")
 		print("=="*39, '\n')
 
-		n_app, app_names, shiftable, non_shiftable, alpha, beta, length = func.applications(df)
+		n_app, app_names, alpha, beta, length = func.applications(df)
 
 		# Get pricing scheme. ToU (Time-of-Use) or RTP (Real-Time-Pricing)
 		price = func.Get_price(hours, seed=seed, ToU=False)
@@ -106,16 +103,14 @@ if __name__ == '__main__':
 		res 		= linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=(0,None))
 		consumption = res.x.reshape(n_app,hours)
 
+		print(res.message)
+		print("Status: ", res.status)
+		print("Minimized cost: %.3f NOK" % res.fun)
+
 		if Plot == True:
 			P.Make_p_hist(df, price)
 			P.consumption_plot(price=price, app=consumption, app_names=app_names)
 			plt.show()
-
-		else:
-			#print(res)
-			print(res.message)
-			print("Status: ", res.status)
-			print("Minimized cost: %.3f NOK" % res.fun)
 
 
 	elif Task3 == True:
@@ -129,6 +124,25 @@ if __name__ == '__main__':
 		df, price, EV_number, Total_con_s, Total_con_n, cost \
 		= func.calc_households(nr_non_shiftable)
 
+		print('\nConsumption and total cost for the Neighborhood')
+		print('='*47, '\n')
+		print('Consumption of the non-shiftable appliances for each household:', '\n')
+		print(Total_con_n, '\n')
+		print('Consumption of the shiftable appliances for each household:', '\n')
+		print(Total_con_s, '\n')
+		print('Total cost for the neighborhood: %.3f NOK' %cost)
+		print('-'*47, '\n')
+		print('Number of EVs: ', EV_number)
+		print('Saved to file: "Task3.txt"')
+
+		myfile = open("Task3.txt", 'w')
+
+		myfile.write('Consumption and total cost for the Neighborhood\n')
+		myfile.write('\nTotal cost for the neighborhood: %.3f NOK' %cost)
+		myfile.write('\nNumber of EVs: %g' %EV_number)
+
+		myfile.close()
+
 		if Plot == True:
 
 			P.Make_p_hist(df, price)
@@ -138,26 +152,3 @@ if __name__ == '__main__':
 									 non_app=Total_con_n, 		\
 									 non_app_names='Non-shiftable applications')
 			plt.show()
-
-			print('\nTotal cost for the neighborhood: %.3f NOK' %cost)
-			print('Number of EVs: ', EV_number)
-
-			myfile = open("Task3.txt", 'w')
-
-			myfile.write('Consumption and total cost for the Neighborhood\n')
-			myfile.write('\nTotal cost for the neighborhood: %.3f NOK' %cost)
-			myfile.write('\nNumber of EVs: %g' %EV_number)
-
-			myfile.close()
-
-		else:
-
-			print('-'*47)
-			print('Consumption and total cost for the Neighborhood')
-			print('-'*47, '\n')
-			print('Consumption of the non-shiftable appliances for each household:', '\n')
-			print(Total_con_n, '\n')
-			print('Consumption of the shiftable appliances for each household:', '\n')
-			print(Total_con_s, '\n')
-			print('Total cost for the neighborhood: %.3f NOK' %cost)
-			print('Number of EVs: ', EV_number)

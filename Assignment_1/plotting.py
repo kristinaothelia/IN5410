@@ -49,17 +49,14 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
     """
 
     fig, ax = plt.subplots(1, 1, figsize=(9,7))    # ax = consumption fig.
-    #fig, ax = plt.subplots(1, 1, figsize=(10,6))    # ax = consumption fig.
     length  = len(price)
 
     bins    = np.arange(0, length)
     width   = 0.9
     bottom  = np.zeros(length)
 
-    #cmap = plt.get_cmap('hsv')
-    #colors = [cmap(i) for i in np.linspace(0, 1, len(app)+1)]
-
     colors = ['firebrick','springgreen','yellow','slategray','magenta','khaki','orangered','slateblue','blue','lime','purple','green','red','saddlebrown','darkturquoise','black']
+
     Tot = 0
     # Iterate over shiftable appliances to create stacked bars for the hist.
     if app is not None:
@@ -97,31 +94,12 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
         p_line.set_ylabel('Price [NOK/kWh]', fontsize=16)
         ax.set_axisbelow(True)
 
-    """
-    # Make the legend without border, and on the right side of the plot
-    handles_con, labels_con     = ax.get_legend_handles_labels()
-    handles_price, labels_price = p_line.get_legend_handles_labels()
-
-    ax.legend(bbox_to_anchor=(1.125, 1),     loc=2, frameon=False, fontsize=15)
-    p_line.legend(bbox_to_anchor=(1.125, 0), loc=2, frameon=False, fontsize=15)
-    """
-
-    #handles_con, labels_con     = ax.get_legend_handles_labels()
-    #handles_price, labels_price = p_line.get_legend_handles_labels()
-
-    #ax.legend(loc='upper center', bbox_to_anchor=(0.5,-0.1), frameon=False, fontsize=15, ncol=3)
     p_line.legend(loc='upper center', bbox_to_anchor=(0.884, 1.2), frameon=False, fontsize=13)
-    #p_line.legend(loc='upper left', frameon=False, fontsize=13)
-    #p_line.legend(loc='best', frameon=False, fontsize=13)
     ax.legend(loc='lower left', bbox_to_anchor= (0.0, 1.1), ncol=3, borderaxespad=0, frameon=False, fontsize=13)
-
-    #text = ax.text(-0.2,1.05, "Aribitrary text", transform=ax.transAxes)
-    #lgd = ax.legend(handles_con, labels_con, loc='upper center', bbox_to_anchor=(0.5,-0.1))
 
     plt.tight_layout()
     #fig.savefig('samplefigure', bbox_extra_artists=(lgd,text), bbox_inches='tight', ncol=3)
     #plt.show()
-
 
 
 def consumption_plot_Task3(price, EV, app=None, non_app=None, app_names=None, non_app_names=None):
@@ -176,10 +154,6 @@ def consumption_plot_Task3(price, EV, app=None, non_app=None, app_names=None, no
         p_line.step(bins, price, color='black', where='mid', label='Price scheme')
         p_line.set_ylabel('Price [NOK/kWh]', fontsize=16)
         ax.set_axisbelow(True)
-
-    # Make the legend without border, and on the right side of the plot
-    #handles_con, labels_con     = ax.get_legend_handles_labels()
-    #handles_price, labels_price = p_line.get_legend_handles_labels()
 
     ax.legend(loc='lower center', bbox_to_anchor= (0.5, 1.1), ncol=2, borderaxespad=0, frameon=False, fontsize=13)
     p_line.legend(loc='lower center', bbox_to_anchor=(0.8, -0.175), ncol=2, frameon=False, fontsize=13)
