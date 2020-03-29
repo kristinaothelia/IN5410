@@ -109,7 +109,6 @@ if __name__ == '__main__':
 		if Plot == True:
 			P.Make_p_hist(df, price)
 			P.consumption_plot(price=price, app=consumption, app_names=app_names)
-
 			plt.show()
 
 		else:
