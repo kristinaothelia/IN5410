@@ -13,13 +13,12 @@ digraph {
 	A1 [label="Select appliances:
  EV, laundry machine and dishwasher" shape=box]
 	A2 [label="Select appliances:
- all appliances (shift + non-shift + EV)" shape=box]
+ All appliances (shift + non-shift + EV)" shape=box]
 	A3 [label="Select appliances:
- all non-shift and some shiftable" shape=box]
+ All non-shift and some shiftable appliances" shape=box]
 	struct1:f0 -> A1 [constraint=true]
 	struct1:f1 -> A2 [constraint=true]
-	struct1:f2 -> A3 [constraint=true xlabel="Price=RTP 
- Households: 30"]
+	struct1:f2 -> A3 [constraint=true xlabel="Households: 30"]
 	p1 [label="Price=ToU" fixedsize=true height=1.1 shape=circle width=1.1]
 	p2 [label="Price=RTP" fixedsize=true height=1.1 shape=circle width=1.1]
 	A1 -> p1 [constraint=true]
@@ -37,16 +36,9 @@ digraph {
 	p2 -> Calc1 [constraint=true style=invis]
 	I1 -> Plot1 [constraint=false xlabel="   yes"]
 	I1 -> Calc1 [constraint=false xlabel="   no"]
-	E [label="EV: yes/no" shape=box]
-	RA [label="Add shiftable appliances (>= 2)" shape=box]
+	E [label="EV: yes/no 
+ Add shiftable appliances (>= 2)" shape=box]
 	A3 -> E [constraint=true]
-	E -> RA [constraint=true]
-	Lin3 [label="Linprog calculation" shape=box]
-	RA -> Lin3 [constraint=true len=0.0001 rank=false]
-	I2 [label="Plot==True" fixedsize=true height=1.2 shape=diamond width=1.2]
-	Lin3 -> I2 [constraint=true]
-	Plot3 [label="Creates and shows plots" shape=box]
-	Calc3 [label="Prints minimized cost" shape=box]
-	I2 -> Plot3 [constraint=true weight=3]
-	I2 -> Calc3 [constraint=true weight=2]
+	YN [label="Added min. 2 shiftable appliances?" shape=diamond]
+	E -> YN [label=" test" constraint=true]
 }
