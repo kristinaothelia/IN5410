@@ -1,4 +1,4 @@
 Consumption and total cost for the Neighborhood
 
-Total cost for the neighborhood: 497.041 NOK
-Number of EVs: 20
+Total cost for the neighborhood: 502.148 NOK
+Number of EVs: 18

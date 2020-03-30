@@ -63,7 +63,7 @@ if __name__ == '__main__':
 		price = func.Get_price(hours, seed=seed, ToU=True)
 
 		# Creating intervals
-		intervals = func.interval_severeal_app(n_app, length, alpha, beta, shuffle=False)
+		intervals = func.interval_severeal_app(n_app, length, alpha, beta)
 
 		# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
 		c, A_eq, b_eq, A_ub, b_ub = func.linprog_input(df, n_app, price, intervals, hours)
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 		price = func.Get_price(hours, seed=seed, ToU=False)
 
 		# Creating intervals
-		intervals = func.interval_severeal_app(n_app, length, alpha, beta, shuffle=False)
+		intervals = func.interval_severeal_app(n_app, length, alpha, beta)
 
 		# Make vriables for linprog. c, A_eq, b_eq, A_ub, b_ub
 		c, A_eq, b_eq, A_ub, b_ub = func.linprog_input(df, n_app, price, intervals, hours)

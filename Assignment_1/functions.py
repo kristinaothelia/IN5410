@@ -23,8 +23,6 @@ def Get_df(file_name='/energy_use.xlsx'):
     nanDict  = {}
     df       = pd.read_excel(filename, header=0, skiprows=0, index_col=0, na_values=nanDict)
 
-    #header_names = list(df)
-    #print(df['Alpha']['EV'])
     return df
 
 def applications(df, households=0, Task3=False):
@@ -164,7 +162,7 @@ def calc_households(nr_non_shiftable, households=30, hours=24, make_result_table
             EV_yes_no.append('No')
 
         # Creating intervals
-        intervals = interval_severeal_app(n_app, length, alpha, beta, shuffle=False)
+        intervals = interval_severeal_app(n_app, length, alpha, beta)
 
         df = pd.concat((non_shiftable, shiftable_combined))
 
@@ -208,6 +206,9 @@ def calc_households(nr_non_shiftable, households=30, hours=24, make_result_table
     return df, price, EV_number, Total_con_s, Total_con_n, cost
 
 def random_appliances(shiftable_ran, optional):
+    """
+    Function that randomly adds appliances to household
+    """
 
     for i in range(len(shiftable_ran)):
         # make random numbers
@@ -218,7 +219,8 @@ def random_appliances(shiftable_ran, optional):
 
 def Get_price(hours, seed, ToU=False):
     """
-    Function returning either Time of Use (ToU) or Real Time Price (RTP)
+    Function returning either Time of Use (ToU) or Real Time Price (RTP).
+    The price is returned as a list with length hours
     """
 
     if ToU == True:                             # ToU price
@@ -236,17 +238,21 @@ def Get_price(hours, seed, ToU=False):
             # Outside peak-hour. Small variations during the night
             if i < 6:
                 price[i] = price[i] + rs.uniform(-0.1,0.1)
-            elif i < 17 or i > 20:
-                price[i] = price[i] + rs.uniform(-0.2,0.2)
             # During peak-hour, some higher random variation
-            else:
+            elif i >= 6 and i < 9:
                 price[i] = price[i] + rs.uniform(-0.2,0.4)
+            # During peak-hour, some higher random variation
+            elif i >= 16 and i < 20:
+                price[i] = price[i] + rs.uniform(-0.2,0.4)
+            # Outside peak-hour. Small variations during the day
+            else:
+                price[i] = price[i] + rs.uniform(-0.15,0.2)
 
     return list(price)
 
-def interval(hour=1, alpha=0, beta=23, shuffle=False):
+def interval(hour=1, alpha=0, beta=23):
     """
-    Creating a time interval
+    Creating a time interval, returned as 'numpy.ndarray'
 
     alpha       | Setup Time
     beta        | Deadline Time
@@ -284,19 +290,21 @@ def interval(hour=1, alpha=0, beta=23, shuffle=False):
 
     return interval
 
-def interval_severeal_app(n_app, length, alpha, beta, shuffle=False):
+def interval_severeal_app(n_app, length, alpha, beta):
     """
     Make intervals for several appliances
     """
     intervals = []
     for i in range(n_app):
-        intervals.append(interval(hour=length[i], alpha=alpha[i], beta=beta[i], shuffle=False))
+        intervals.append(interval(hour=length[i], alpha=alpha[i], beta=beta[i]))
 
     return np.array(intervals)
 
 def linprog_input(df, n_app, price, intervals, hours=24):
     """
-    Function returning the inputs needed in linprog
+    Function returning the inputs needed in linprog,
+    all the parameters are returned as 'numpy.ndarray', dtype=float64
+
     c       | The coefficients of the linear objective function to be minimized.
               Pricing scheme. Shape: (n_app*24,)
 
@@ -325,11 +333,11 @@ def linprog_input(df, n_app, price, intervals, hours=24):
 
     b_ub    | The inequality constraint vector.
               Power use for all appliances. Shape: (n_app*24+1*24,)
-              --> [Power use(app1)*24 + Power use(app2)*24 +...+ (Tot\_energy for all apps)*24]
+              --> [Power use(app1)*24 + Power use(app2)*24 +...+ (Tot_energy for all apps)*24]
     """
 
     c    = np.array(price*len(df))
-    b_eq = df['Daily usage [kWh]'].values
+    b_eq = df['Daily usage [kWh]'].values # Total daily usage of the appliances
 
     A_eq = np.zeros((n_app, n_app*hours))
     for i in range(n_app):
@@ -344,7 +352,7 @@ def linprog_input(df, n_app, price, intervals, hours=24):
     A_id  = np.eye(n_app*hours)
     A_ub  = np.concatenate((A_id,A_),axis=0)
 
-    energy_hour = df['Hourly usage [kW]'].values    # Power Use [kW]
+    energy_hour = df['Hourly usage [kW]'].values  # Power Use [kW]
     E_tot       = [np.sum(energy_hour)]*hours
     b           = []
     for i in energy_hour:
@@ -356,20 +364,23 @@ def linprog_input(df, n_app, price, intervals, hours=24):
 
 def result_table(hav_nonshift, hav_shift, hav_tot, cost_nr, Names, EV_yes_no, house_nr):
     """
-    A function which creates a Pandas DataFrame with the household results,
+    A function which creates a Pandas DataFrame with the household's results,
     and export the DataFrame as an excel-file, a LaTex-table and a png-image:
     result_table.xlsx
     latex_table.tex
     result_figure.png
     """
 
+    # Creates a pandas DataFrame (result_table) of the input lists
     list_of_tuples = list(zip(hav_nonshift, hav_shift, hav_tot, Names, cost_nr, EV_yes_no))
     result_table   = pd.DataFrame(list_of_tuples,index=house_nr,\
-                         columns = ['Non-shiftable [kWh]', 'Shiftable [kWh]', 'Total [kWh]', 'Optional app.','Minimized cost [NOK]', 'EV'])
+                         columns = ['Non-shiftable [kWh]', 'Shiftable [kWh]', 'Total [kWh]', \
+                                    'Optional app.','Minimized cost [NOK]', 'EV'])
 
     l = len(result_table)         # length of table
     w = len(result_table.columns) # widt of table
 
+    # Creates an excel-document of the dataframe 'result_table'
     writer   = pd.ExcelWriter('result_table.xlsx', engine='xlsxwriter')
     result_table.to_excel(writer, sheet_name='task3', float_format="%.3f", index_label='House')
     workbook = writer.book
@@ -394,27 +405,10 @@ def result_table(hav_nonshift, hav_shift, hav_tot, cost_nr, Names, EV_yes_no, ho
     header_format = workbook.add_format({'bottom':2, 'top':5, 'left':0, 'right':2, 'bg_color': '#C6EFCE'})
     worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, l, 0), {'type': 'no_errors', 'format': house_format})
     worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, w), {'type': 'no_errors', 'format': header_format})
-    #house_format_b  = workbook.add_format({'bottom':1})
-    #worksheet.conditional_format(xlsxwriter.utility.xl_range(1, 0, l, 0), {'type': 'no_errors', 'format': house_format_b})
 
-    '''
-    right_border  = workbook.add_format({'bottom':0, 'top':0, 'left':0, 'right':5})
-    left_border  = workbook.add_format({'bottom':0, 'top':0, 'left':5, 'right':0})
-    bottom_border = workbook.add_format({'bottom':5, 'top':0, 'left':0, 'right':0})
-    top_border = workbook.add_format({'bottom':0, 'top':5, 'left':0, 'right':2})
-    last_column = workbook.add_format({'bottom':5, 'top':5, 'left':0, 'right':0})
-    worksheet.conditional_format(xlsxwriter.utility.xl_range(l, w, 0, w), {'type': 'no_errors', 'format': right_border})
-    worksheet.conditional_format(xlsxwriter.utility.xl_range(l, 0, 0, 0), {'type': 'no_errors', 'format': left_border})
-    worksheet.conditional_format(xlsxwriter.utility.xl_range(l, 0, l, 4), {'type': 'no_errors', 'format': bottom_border})
-    worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, 4), {'type': 'no_errors', 'format': top_border})
-    worksheet.conditional_format(xlsxwriter.utility.xl_range(0, 0, 0, 4), {'type': 'no_errors', 'format': last_column})
-    '''
-    writer.save()
+    writer.save() # saves the document
 
-    # Easy result table
-    #result_table.to_excel('result_table.xlsx', float_format="%.3f", index_label='House', engine='xlsxwriter')
-
-    # Creates a .tex table which can be imported to a latex document
+    # Creates a .tex table which can be imported or copied to a latex document
     latex_table = result_table.to_latex('latex_table.tex', float_format="%.2f")
 
     # Exports a png image of the result table
