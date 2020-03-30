@@ -73,8 +73,19 @@ if __name__ == '__main__':
 		consumption = res.x.reshape(n_app,hours)
 
 		print(res.message)
-		print("Status: ", res.status)
-		print("Minimized cost: %.3f NOK" % res.fun)
+		print('Status: ', res.status)
+		print('Simple household consumption: %.1f kWh' % np.sum(consumption))
+		print('Minimized cost for the simple household: %.1f NOK' % res.fun)
+		print('Saved to file: "Task1.txt"')
+
+		myfile = open("Task1.txt", 'w')
+
+		myfile.write(res.message)
+		myfile.writelines(["\nStatus: ", str(res.status)])
+		myfile.write('\nSimple household consumption: %.1f kWh' % np.sum(consumption))
+		myfile.write('\nMinimized cost for the simple household: %.1f NOK' % res.fun)
+
+		myfile.close()
 
 		if Plot == True:
 			P.Make_p_hist(df, price)
@@ -105,7 +116,19 @@ if __name__ == '__main__':
 
 		print(res.message)
 		print("Status: ", res.status)
-		print("Minimized cost: %.3f NOK" % res.fun)
+		print("Consumption [kWh]:", np.sum(consumption))
+		print("Minimized cost: %.1f NOK" % res.fun)
+		print('Saved to file: "Task2.txt"')
+
+		myfile = open("Task2.txt", 'w')
+
+		myfile.write(res.message)
+		myfile.writelines(["\nStatus: ", str(res.status)])
+		myfile.write('\nComplex household consumption: %.1f kWh' % np.sum(consumption))
+		myfile.write('\nMinimized cost for the complex household: %.1f NOK' % res.fun)
+
+		myfile.close()
+
 
 		if Plot == True:
 			P.Make_p_hist(df, price)
@@ -137,8 +160,10 @@ if __name__ == '__main__':
 
 		myfile = open("Task3.txt", 'w')
 
-		myfile.write('Consumption and total cost for the Neighborhood\n')
-		myfile.write('\nTotal cost for the neighborhood: %.3f NOK' %cost)
+		myfile.write('Total consumption for the neighborhood:      %.1f kWh' %(sum(Total_con_n)+sum(Total_con_s)))
+		myfile.write('\nConsumption of the non-shiftable appliances: %.1f kWh' %sum(Total_con_n))
+		myfile.write('\nConsumption of the shiftable appliances:     %.1f kWh\n' %sum(Total_con_s))
+		myfile.write('\nTotal cost for the neighborhood:             %.1f NOK' %cost)
 		myfile.write('\nNumber of EVs: %g' %EV_number)
 
 		myfile.close()

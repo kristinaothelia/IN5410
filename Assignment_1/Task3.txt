@@ -1,4 +1,6 @@
-Consumption and total cost for the Neighborhood
+Total consumption for the neighborhood:      900.6 kWh
+Consumption of the non-shiftable appliances: 532.2 kWh
+Consumption of the shiftable appliances:     368.4 kWh
 
-Total cost for the neighborhood: 502.148 NOK
-Number of EVs: 18
+Total cost for the neighborhood:             502.6 NOK
+Number of EVs: 17

@@ -30,7 +30,7 @@ def Make_p_hist(df, price):
         plt.savefig("Figures/Task1_hist.png")
     else:
         plt.title("Real Time Pricing [RTP]", fontsize='16', weight='bold')
-        plt.savefig("Figures/Task2_hist.png")
+        plt.savefig("Figures/Task2and3_hist.png")
     #plt.show()
 
 
@@ -48,14 +48,17 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
     non_app_names   | Non-shiftable appliances - names
     """
 
-    fig, ax = plt.subplots(1, 1, figsize=(9,7))    # ax = consumption fig.
-    length  = len(price)
+    if len(app) == 3:
+        fig, ax = plt.subplots(1, 1, figsize=(9,6))    # ax = consumption fig.
+        colors = ['m', 'b', 'g']
+    else:
+        fig, ax = plt.subplots(1, 1, figsize=(9,7))    # ax = consumption fig.
+        colors = ['firebrick','springgreen','yellow','slategray','magenta','khaki','orangered','slateblue','blue','lime','purple','green','red','saddlebrown','darkturquoise','black']
 
+    length  = len(price)
     bins    = np.arange(0, length)
     width   = 0.9
     bottom  = np.zeros(length)
-
-    colors = ['firebrick','springgreen','yellow','slategray','magenta','khaki','orangered','slateblue','blue','lime','purple','green','red','saddlebrown','darkturquoise','black']
 
     Tot = 0
     # Iterate over shiftable appliances to create stacked bars for the hist.
@@ -94,11 +97,19 @@ def consumption_plot(price, app=None, non_app=None, app_names=None, non_app_name
         p_line.set_ylabel('Price [NOK/kWh]', fontsize=16)
         ax.set_axisbelow(True)
 
-    p_line.legend(loc='upper center', bbox_to_anchor=(0.884, 1.2), frameon=False, fontsize=13)
-    ax.legend(loc='lower left', bbox_to_anchor= (0.0, 1.1), ncol=3, borderaxespad=0, frameon=False, fontsize=13)
+    if len(app) == 3:
+        p_line.legend(loc='upper center', bbox_to_anchor=(0.884, 1.2), frameon=False, fontsize=13)
+        ax.legend(loc='lower left', bbox_to_anchor= (0.0, 1.1), ncol=2, borderaxespad=0, frameon=False, fontsize=13)
+    else:
+        p_line.legend(loc='upper center', bbox_to_anchor=(0.884, 1.2), frameon=False, fontsize=13)
+        ax.legend(loc='lower left', bbox_to_anchor= (0.0, 1.1), ncol=3, borderaxespad=0, frameon=False, fontsize=13)
 
     plt.tight_layout()
-    #fig.savefig('samplefigure', bbox_extra_artists=(lgd,text), bbox_inches='tight', ncol=3)
+
+    if len(app) == 3:
+        plt.savefig("Figures/Task1_consumption_price.png")
+    else:
+        plt.savefig("Figures/Task2_consumption_price.png")
     #plt.show()
 
 
@@ -159,3 +170,4 @@ def consumption_plot_Task3(price, EV, app=None, non_app=None, app_names=None, no
     p_line.legend(loc='lower center', bbox_to_anchor=(0.8, -0.175), ncol=2, frameon=False, fontsize=13)
 
     plt.tight_layout()
+    plt.savefig("Figures/Task3_consumption_price.png")

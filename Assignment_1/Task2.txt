@@ -1,0 +1,4 @@
+Optimization terminated successfully.
+Status: 0
+Complex household consumption: 35.0 kWh
+Minimized cost for the complex household: 19.1 NOK
