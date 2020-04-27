@@ -13,7 +13,7 @@ import seaborn              as sns
 from sklearn.preprocessing import StandardScaler
 # -----------------------------------------------------------------------------
 
-def Data(filename='/TrainData.csv'):
+def Get_data(filename='/TrainData.csv'):
     """
     Function for reading csv files
     Input: Filename as a string
@@ -26,53 +26,61 @@ def Data(filename='/TrainData.csv'):
     return Data
 
 
-# Data for training the model (x_train and y_train?):
-TrainData = Data(filename='/TrainData.csv')
+def Data(TrainData, WF_input, Solution):
+    features = TrainData.loc[:, (TrainData.columns != 'POWER')].values
+    target   = TrainData.loc[:, TrainData.columns == 'POWER'].values        # Targets
 
-# Data for later prediction (X_test?): 
-WF_input  = Data(filename='/WeatherForecastInput.csv')
+    pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Targets
+    power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Targets
 
-# Solution used to calculate error of the predictions (y_test?)
-Solution  = Data(filename='/Solution.csv')
+    print(features)
+    print(target)
+    return features, target, pred_features, power_solution
 
-# Does not seem like any of the datasets contain nan-values:
+# ----------------------------------------------------------------------------
+# Maatte bare sette det inn i en def for det ble rart naar man kjorte main :P
+def linreg_test():
+    from sklearn.linear_model  import LinearRegression
+    from sklearn.metrics       import mean_squared_error
+    # Data for training the model (x_train and y_train?):
+    TrainData = Get_data(filename='/TrainData.csv')
 
-#TrainData = TrainData.replace(r'^\s*$', np.nan, regex=True)
-#TrainData = pd.DataFrame.dropna(TrainData, axis=0, how='any')
-#WF_input  = WF_input.replace(r'^\s*$', np.nan, regex=True)
-#WF_input = pd.DataFrame.dropna(WF_input, axis=0, how='any')
+    # Data for later prediction (X_test?):
+    WF_input  = Get_data(filename='/WeatherForecastInput.csv')
+
+    # Solution used to calculate error of the predictions (y_test?)
+    Solution  = Get_data(filename='/Solution.csv')
+
+    # Does not seem like any of the datasets contain nan-values:
+
+    #TrainData = TrainData.replace(r'^\s*$', np.nan, regex=True)
+    #TrainData = pd.DataFrame.dropna(TrainData, axis=0, how='any')
+    #WF_input  = WF_input.replace(r'^\s*$', np.nan, regex=True)
+    #WF_input = pd.DataFrame.dropna(WF_input, axis=0, how='any')
 
 
-# 'Power' is the 'target' and the other columns are the 'features'
-# Only use the features for 10m, so dropping the 100m colums 
+    # 'Power' is the 'target' and the other columns are the 'features'
+    # Only use the features for 10m, so dropping the 100m colums
 
-TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
-WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
+    TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
+    WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
 
-print(TrainData)
+    print(TrainData)
 
-features = TrainData.loc[:, (TrainData.columns != 'POWER')].values
-target   = TrainData.loc[:, TrainData.columns == 'POWER'].values # Targets
+    features, target, pred_features, power_solution = Data(TrainData, WF_input, Solution)
 
-pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values # Targets
-power_solution = Solution.loc[:, Solution.columns == 'POWER'].values # Targets
+    linreg = LinearRegression()
+    linreg.fit(features, target) #training the algorithm
 
-print(features)
-print(target)
+    y_pred = linreg.predict(pred_features)
 
-from sklearn.linear_model  import LinearRegression
-from sklearn.metrics       import mean_squared_error
+    compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
+    print(compare_values)
 
-linreg = LinearRegression()  
-linreg.fit(features, target) #training the algorithm
+    mse = mean_squared_error(power_solution, y_pred)
+    print("mse_linreg: ", mse)
 
-y_pred = linreg.predict(pred_features)
-
-compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
-print(compare_values)
-
-mse = mean_squared_error(power_solution, y_pred)
-print(mse)
+linreg_test()
 
 #sc_feature = StandardScaler()
 #sc_target = StandardScaler()
