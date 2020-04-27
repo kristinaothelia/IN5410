@@ -80,6 +80,13 @@ def linreg_test():
     mse = mean_squared_error(power_solution, y_pred)
     print("mse_linreg: ", mse)
 
+    #squared:boolean value, optional (default = True)
+    #If True returns MSE value, if False returns RMSE value.
+    # Funker ikke...
+    #rmse = mean_squared_error(power_solution, y_pred, squared=False)
+    rmse = np.sqrt(mean_squared_error(power_solution, y_pred))
+    print("rmse_linreg: ", rmse)
+
 linreg_test()
 
 #sc_feature = StandardScaler()
