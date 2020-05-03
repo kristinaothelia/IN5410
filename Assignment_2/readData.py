@@ -13,6 +13,7 @@ import seaborn              as sns
 from sklearn.preprocessing import StandardScaler
 # -----------------------------------------------------------------------------
 
+
 def Get_data(filename='/TrainData.csv'):
     """
     Function for reading csv files
@@ -33,7 +34,9 @@ def Data(TrainData, WF_input, Solution):
     pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Targets
     power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Targets
 
+    print("\nFeatures:")
     print(features)
+    print("\nTargets:")
     print(target)
     return features, target, pred_features, power_solution
 
@@ -87,7 +90,7 @@ def linreg_test():
     rmse = np.sqrt(mean_squared_error(power_solution, y_pred))
     print("rmse_linreg: ", rmse)
 
-linreg_test()
+#linreg_test()
 
 #sc_feature = StandardScaler()
 #sc_target = StandardScaler()

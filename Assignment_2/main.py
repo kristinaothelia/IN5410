@@ -1,7 +1,7 @@
 """
 IN5410 - Energy informatics | Assignment 2
 """
-import os, random, xlsxwriter, sys, argparse, warnings
+import os, random, xlsxwriter, sys, argparse, warnings, csv
 
 import matplotlib.pyplot 	as plt
 import numpy               	as np
@@ -13,6 +13,7 @@ from random 				import seed
 
 import readData             as Data
 import MachineLearning      as ML
+import plots                as P
 
 # Python 3.7.4
 #------------------------------------------------------------------------------
@@ -22,8 +23,9 @@ Solution  = Data.Get_data(filename='/Solution.csv')
 F_temp    = Data.Get_data(filename='/ForecastTemplate.csv')
 WF_input  = Data.Get_data(filename='/WeatherForecastInput.csv')
 
+
 # Maa gjores i hver task?
-features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution)
+#features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution)
 
 if __name__ == '__main__':
 
@@ -36,6 +38,10 @@ if __name__ == '__main__':
 
     # Optional argument for plotting
     parser.add_argument('-X', '--Plot', action='store_true', help="Plotting", required=False)
+    parser.add_argument('-L', '--linreg', action='store_true', help="Plotting", required=False)
+    parser.add_argument('-K', '--KNN', action='store_true', help="Plotting", required=False)
+    parser.add_argument('-S', '--SVM', action='store_true', help="Plotting", required=False)
+    parser.add_argument('-A', '--ANN', action='store_true', help="Plotting", required=False)
 
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
@@ -49,6 +55,10 @@ if __name__ == '__main__':
     Task2    = args.Task2
     Task3    = args.Task3
     Plot     = args.Plot
+    linreg   = args.linreg
+    KNN      = args.KNN
+    SVM      = args.SVM
+    ANN      = args.ANN
     Warnings = args.Warnings
 
     if not Warnings:
@@ -82,18 +92,87 @@ if __name__ == '__main__':
         TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
         WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
 
-        print(TrainData)
+        """ Fra noen andre, men kult!
+        data = TrainData
+        weather_forecast = WF_input
 
-        # Linreg
+        data['windspeed']  = data['WS10']
+        data['zonal']      = data['U10']
+        data['meridional'] = data['V10']
+        weather_forecast['windspeed']  = weather_forecast['WS10']
+        weather_forecast['zonal']      = weather_forecast['U10']
+        weather_forecast['meridional'] = weather_forecast['V10']
+        cmap = sns.cubehelix_palette(start=1, light=1, as_cmap=True)
+        ax=sns.kdeplot(data['zonal'], data['meridional'], cmap=cmap, shade=True, cut=5)
+        ax=sns.kdeplot(weather_forecast['zonal'], weather_forecast['meridional'], cmap='Reds', shade=False, cut=5,shade_lowest=False)
+        """
 
+        if linreg == True:
 
-        # Save predicted results in .cvs files
+            y_pred, power_solution = ML.linreg(TrainData, WF_input, Solution)
 
+            # Save predicted results in .cvs files
+            # altsaa y_pred til csv?
 
-        # Accuracy. RMSE..? Ikke MSE?
+            # Accuracy, R**2
+            print("\nMSE, linreg:   %.4f "% ML.MSE(power_solution, y_pred))
+            print("RMSE, linreg:  %.4f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
 
+            #if Plot == True:
+            # Graphical illustration
+            P.prediction_solution_plot(y_pred, power_solution, title="Linear Regression")
 
-        # Plots?
+        elif KNN == True:
+
+            #y_pred, power_solution = ML.
+
+            # Save predicted results in .cvs files
+            # altsaa y_pred til csv?
+
+            # Accuracy
+            print("\nMSE, kNN:      %.4f "% ML.MSE(power_solution, y_pred))
+            print("RMSE, kNN:     %.4f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+
+            #if Plot == True:
+            # Graphical illustration
+            P.prediction_solution_plot(y_pred, power_solution, title="k-Nearest Neighbors")
+
+        elif SVM == True:
+
+            #y_pred, power_solution = ML.
+
+            # Save predicted results in .cvs files
+            # altsaa y_pred til csv?
+
+            # Accuracy
+            print("\nMSE, SVM:      %.4f "% ML.MSE(power_solution, y_pred))
+            print("RMSE, SVM:     %.4f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+
+            #if Plot == True:
+            # Graphical illustration
+            P.prediction_solution_plot(y_pred, power_solution, title="Support Vector Machine")
+
+        elif ANN == True:
+
+            #y_pred, power_solution = ML.
+
+            # Save predicted results in .cvs files
+            # altsaa y_pred til csv?
+
+            # Accuracy
+            print("\nMSE, ANN:      %.4f "% ML.MSE(power_solution, y_pred))
+            print("RMSE, ANN:     %.4f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+
+            #if Plot == True:
+            # Graphical illustration
+            P.prediction_solution_plot(y_pred, power_solution, title="Artificial Neural Network")
+
+        else:
+            print("Pass an argument for ML method for Task 1")
 
 
     elif Task2 == True:

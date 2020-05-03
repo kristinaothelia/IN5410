@@ -1,10 +1,12 @@
 """
 IN5410 - Energy informatics | Assignment 2
 
-Linear Regression           | linreg
-k-Nearest Neighbor          | kNN
-Supported Vector Regression | SVR
-Artificial Neural Networks  | ANN
+The machine learning techniques include:
+
+Linear Regression               | linreg
+k-Nearest Neighbor              | kNN
+Supported Vector Regression     | SVR
+Artificial Neural Networks      | ANN
 """
 
 import numpy  					as np
