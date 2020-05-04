@@ -5,7 +5,12 @@ IN5410 - Energy informatics | Assignment 2
 import matplotlib.pyplot 		as plt
 import matplotlib.dates         as mdates
 
+<<<<<<< HEAD
 from matplotlib.ticker import MaxNLocator
+=======
+import readData                as Data
+import datetime
+>>>>>>> 5000458035915aadb6dea843ee4130f275d4eec6
 # -----------------------------------------------------------------------------
 
 def prediction_solution_plot(y_pred, power_solution, date, title=""):
