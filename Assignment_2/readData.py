@@ -34,10 +34,6 @@ def Data(TrainData, WF_input, Solution):
     pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Targets
     power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Targets
 
-    print("\nFeatures:")
-    print(features)
-    print("\nTargets:")
-    print(target)
     return features, target, pred_features, power_solution
 
 # ----------------------------------------------------------------------------

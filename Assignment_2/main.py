@@ -125,7 +125,8 @@ if __name__ == '__main__':
 
         elif KNN == True:
 
-            #y_pred, power_solution = ML.
+            k = 5
+            y_pred, power_solution = ML.kNN(TrainData, WF_input, Solution, k)
 
             # Save predicted results in .cvs files
             # altsaa y_pred til csv?
