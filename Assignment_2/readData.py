@@ -27,12 +27,22 @@ def Get_data(filename='/TrainData.csv'):
     return Data
 
 
-def Data(TrainData, WF_input, Solution):
+def Data(TrainData, WF_input, Solution, meter='ten'):
+
     features = TrainData.loc[:, (TrainData.columns != 'POWER')].values
     target   = TrainData.loc[:, TrainData.columns == 'POWER'].values        # Targets
 
     pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Targets
     power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Targets
+    
+    if meter == 'ten':
+        # Fix data for the specific task
+        TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
+        WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
+
+    elif meter == None:
+        # Remvoing all wind features, for task 3
+        TrainData.drop(columns=['U10','V10','WS10', 'U100', 'V100', 'WS100'], axis=1, inplace=True)
 
     return features, target, pred_features, power_solution
 

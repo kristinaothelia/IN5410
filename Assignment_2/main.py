@@ -40,7 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('-X', '--Plot', action='store_true', help="Plotting", required=False)
     parser.add_argument('-L', '--linreg', action='store_true', help="Plotting", required=False)
     parser.add_argument('-K', '--KNN', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-S', '--SVM', action='store_true', help="Plotting", required=False)
+    parser.add_argument('-S', '--SVR', action='store_true', help="Plotting", required=False)
     parser.add_argument('-A', '--ANN', action='store_true', help="Plotting", required=False)
 
     # Optional argument for printing out possible warnings
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     Plot     = args.Plot
     linreg   = args.linreg
     KNN      = args.KNN
-    SVM      = args.SVM
+    SVR      = args.SVR
     ANN      = args.ANN
     Warnings = args.Warnings
 
@@ -89,8 +89,8 @@ if __name__ == '__main__':
         """
 
         # Fix data for the specific task
-        TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
-        WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
+        #TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
+        #WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
 
         """ Fra noen andre, men kult!
         data = TrainData
@@ -107,12 +107,13 @@ if __name__ == '__main__':
         ax=sns.kdeplot(weather_forecast['zonal'], weather_forecast['meridional'], cmap='Reds', shade=False, cut=5,shade_lowest=False)
         """
 
+
         if linreg == True:
 
             y_pred, power_solution = ML.linreg(TrainData, WF_input, Solution)
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv?
+            # altsaa y_pred til csv? ja, tror det..? ########
 
             # Accuracy, R**2
             print("\nMSE, linreg:   %.4f "% ML.MSE(power_solution, y_pred))
@@ -129,9 +130,9 @@ if __name__ == '__main__':
             y_pred, power_solution = ML.kNN(TrainData, WF_input, Solution, k)
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv?
+            # altsaa y_pred til csv? ja, tror det..?
 
-            # Accuracy
+            # Accuracy metrics 
             print("\nMSE, kNN:      %.4f "% ML.MSE(power_solution, y_pred))
             print("RMSE, kNN:     %.4f"% ML.RMSE(power_solution, y_pred))
             print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
@@ -140,21 +141,21 @@ if __name__ == '__main__':
             # Graphical illustration
             P.prediction_solution_plot(y_pred, power_solution, title="k-Nearest Neighbors")
 
-        elif SVM == True:
+        elif SVR == True:
 
-            #y_pred, power_solution = ML.
+            y_pred, power_solution = ML.SVR_func(TrainData, WF_input, Solution)
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv?
+            # altsaa y_pred til csv? ja, tror det..?
 
-            # Accuracy
-            print("\nMSE, SVM:      %.4f "% ML.MSE(power_solution, y_pred))
-            print("RMSE, SVM:     %.4f"% ML.RMSE(power_solution, y_pred))
+            # Accuracy metrics
+            print("\nMSE, SVR:      %.4f "% ML.MSE(power_solution, y_pred))
+            print("RMSE, SVR:     %.4f"% ML.RMSE(power_solution, y_pred))
             print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
 
             #if Plot == True:
             # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, title="Support Vector Machine")
+            P.prediction_solution_plot(y_pred, power_solution, title="Support Vector Regression")
 
         elif ANN == True:
 

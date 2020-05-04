@@ -6,7 +6,7 @@ k-Nearest Neighbor          | kNN
 Supported Vector Regression | SVR
 Artificial Neural Networks  | ANN
 """
-
+import sys
 import numpy  					as np
 import pandas 					as pd
 import readData             	as Data
@@ -16,7 +16,7 @@ from sklearn.model_selection  	import train_test_split
 from sklearn.preprocessing 		import StandardScaler
 from sklearn.linear_model     	import LinearRegression
 from sklearn.metrics       	  	import mean_squared_error, r2_score, classification_report, confusion_matrix
-from sklearn.neighbors 		  	import KNeighborsClassifier
+from sklearn.neighbors 		  	import KNeighborsRegressor #KNeighborsClassifier
 from sklearn.svm 			  	import SVR
 # -----------------------------------------------------------------------------
 
@@ -36,12 +36,12 @@ def linreg(TrainData, WF_input, Solution):
 
 	# 'Power' is the 'target' and the other columns are the 'features'
     # Only use the features for 10m, so dropping the 100m colum
-	features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution)
+	features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='ten')
 
 	linreg = LinearRegression(normalize=True)		# Model
 	linreg.fit(features, target) 					# Training the model
 
-	# BRUKES DETTE?
+	# BRUKES DETTE? Var bare fra det eksempelet i adressen over, vet ikke om vi trenger det ###### 
 	print("intercept_ : ", linreg.intercept_)		# To retrieve the intercept
 	print("coef_      : ", linreg.coef_)			# For retrieving the slope
 
@@ -56,7 +56,8 @@ def linreg(TrainData, WF_input, Solution):
 
 
 def kNN(TrainData, WF_input, Solution, k):
-	#https://towardsdatascience.com/knn-using-scikit-learn-c6bed765be75
+	#regression example: 
+	#https://medium.com/analytics-vidhya/k-neighbors-regression-analysis-in-python-61532d56d8e4
 
 	# Tester forst helt basic
 
@@ -67,7 +68,7 @@ def kNN(TrainData, WF_input, Solution, k):
 	print("\nTargets:")
 	print(target)
 
-	classifier = KNeighborsClassifier(n_neighbors=k)
+	classifier = KNeighborsRegressor(n_neighbors=k)
 	classifier.fit(features, target)
 	y_pred = classifier.predict(pred_features)
 
@@ -96,11 +97,13 @@ def kNN(X_train, X_test, y_train, y_test):	# TrainData, WF_input, Solution
 	# plot to find optimal value for k, maybe have 'find_k/k_fold' in separate function?
 """
 
-def SVR():
+def SVR_func(TrainData, WF_input, Solution):
 	#https://medium.com/pursuitnotes/support-vector-regression-in-6-steps-with-python-c4569acd062d
-	svr_reg = SVR(kernel='rbf') # see link/documentation to choose kernel
-	svr_reg.fit(X_train,y_train)
-	y_pred = svr_reg.predict(X_test)
+	features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution)
+	svr_reg = SVR() # kernel='rbf' see link/documentation to choose kernel
+	svr_reg.fit(features, target)
+	y_pred = svr_reg.predict(pred_features)
+	return y_pred, power_solution
 
 
 def ANN():
