@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
             #if Plot == True:
             # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, title="Linear Regression")
+            P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression")
 
         elif KNN == True:
 
