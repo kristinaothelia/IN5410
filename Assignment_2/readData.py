@@ -34,8 +34,13 @@ def Data(TrainData, WF_input, Solution, meter='ten'):
 
     pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Targets
     power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Targets
-    
-    if meter == 'ten':
+
+    #print("\nFeatures:")
+	#print(features)
+	#print("\nTargets:")
+	#print(target)
+
+    if meter == 'ten':  # Kalle None og den andre for task 3?
         # Fix data for the specific task
         TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
         WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)

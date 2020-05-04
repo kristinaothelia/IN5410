@@ -4,7 +4,7 @@ IN5410 - Energy informatics | Assignment 2
 
 import matplotlib.pyplot 		as plt
 
-import readData                as Data 
+import readData                as Data
 import datetime
 # -----------------------------------------------------------------------------
 

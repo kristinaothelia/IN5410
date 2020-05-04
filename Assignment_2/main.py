@@ -32,16 +32,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="ML for Wind Energy Forecasting")
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-1', '--Task1', action="store_true", help="??")
-    group.add_argument('-2', '--Task2', action="store_true", help="??")
-    group.add_argument('-3', '--Task3', action="store_true", help="??")
+    group.add_argument('-1', '--Task1', action="store_true", help="Task 1")
+    group.add_argument('-2', '--Task2', action="store_true", help="Task 2")
+    group.add_argument('-3', '--Task3', action="store_true", help="Task 3")
 
     # Optional argument for plotting
     parser.add_argument('-X', '--Plot', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-L', '--linreg', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-K', '--KNN', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-S', '--SVR', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-A', '--ANN', action='store_true', help="Plotting", required=False)
+    parser.add_argument('-L', '--linreg', action='store_true', help="Linreg", required=False)
+    parser.add_argument('-K', '--KNN', action='store_true', help="kNN", required=False)
+    parser.add_argument('-S', '--SVR', action='store_true', help="SVR", required=False)
+    parser.add_argument('-A', '--ANN', action='store_true', help="ANN", required=False)
+    #parser.add_argument('-P', '--Params', action='store_true', help="Find parameters", required=False)
 
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
@@ -59,6 +60,7 @@ if __name__ == '__main__':
     KNN      = args.KNN
     SVR      = args.SVR
     ANN      = args.ANN
+    #Params   = args.Params
     Warnings = args.Warnings
 
     if not Warnings:
@@ -69,8 +71,14 @@ if __name__ == '__main__':
     if Task1 == True:
 
         print("Task 1")
+        print("--"*20)
 
         """
+        X_train						| features
+        X_test						| pred_features
+        y_train						| target
+        y_test						| power_solution
+
         Find the windspeed for the whole month of 11.2013 in the file
         WeatherForecastInput.csv. For each training model and the wind speed
         data, you predict the wind power generation in 11.2013 and save
@@ -88,9 +96,6 @@ if __name__ == '__main__':
         accuracy among the machine learningapproaches.
         """
 
-        # Fix data for the specific task
-        #TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
-        #WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
 
         """ Fra noen andre, men kult!
         data = TrainData
@@ -110,71 +115,91 @@ if __name__ == '__main__':
 
         if linreg == True:
 
-            y_pred, power_solution = ML.linreg(TrainData, WF_input, Solution)
+            print("Linear Regression\n")
+            # Data preprocessing
+            features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='ten')
+
+            # Linear Regression
+            y_pred, power_solution = ML.linreg(features, target, pred_features, power_solution)
 
             # Save predicted results in .cvs files
             # altsaa y_pred til csv? ja, tror det..? ########
 
             # Accuracy, R**2
-            print("\nMSE, linreg:   %.4f "% ML.MSE(power_solution, y_pred))
-            print("RMSE, linreg:  %.4f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
+            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
 
-            #if Plot == True:
-            # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, title="Linear Regression")
+            if Plot == True:
+                # Graphical illustration
+                P.prediction_solution_plot(y_pred, power_solution, title="Linear Regression")
 
         elif KNN == True:
 
-            k = 5
-            y_pred, power_solution = ML.kNN(TrainData, WF_input, Solution, k)
+            print("kNN")
+            # Data preprocessing
+            features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='ten')
+
+            # Find parameters
+            # Faar bare den hoyeste k-verdien... overfitting?
+            #ML.kNN_parameters(features, target, pred_features, power_solution)
+
+            # k-Nearest Neighbor
+            k = 12
+            weights = 'uniform'
+            y_pred, power_solution = ML.kNN(features, target, pred_features, power_solution, k, weights)
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv? ja, tror det..?
+            ###
 
-            # Accuracy metrics 
-            print("\nMSE, kNN:      %.4f "% ML.MSE(power_solution, y_pred))
-            print("RMSE, kNN:     %.4f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+            # Accuracy metrics
+            print("\nMetrics when k=%g, weight=%s" %(k, weights))
+            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
+            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
 
-            #if Plot == True:
-            # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, title="k-Nearest Neighbors")
+            if Plot == True:
+                # Graphical illustration
+                P.prediction_solution_plot(y_pred, power_solution, title="k-Nearest Neighbors (kNN). k=%g"%k)
 
         elif SVR == True:
+
+            print("SVR\n")
 
             y_pred, power_solution = ML.SVR_func(TrainData, WF_input, Solution)
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv? ja, tror det..?
+            ###
 
             # Accuracy metrics
-            print("\nMSE, SVR:      %.4f "% ML.MSE(power_solution, y_pred))
-            print("RMSE, SVR:     %.4f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
+            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
 
-            #if Plot == True:
-            # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, title="Support Vector Regression")
+            if Plot == True:
+                # Graphical illustration
+                P.prediction_solution_plot(y_pred, power_solution, title="Support Vector Regression (SVR)")
 
         elif ANN == True:
+
+            print("ANN\n")
 
             #y_pred, power_solution = ML.
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv?
+            ###
 
             # Accuracy
-            print("\nMSE, ANN:      %.4f "% ML.MSE(power_solution, y_pred))
-            print("RMSE, ANN:     %.4f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.4f"% ML.R2(power_solution, y_pred))
+            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
+            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
+            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
 
-            #if Plot == True:
-            # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, title="Artificial Neural Network")
+            if Plot == True:
+                # Graphical illustration
+                P.prediction_solution_plot(y_pred, power_solution, title="Artificial Neural Network (ANN)")
 
         else:
-            print("Pass an argument for ML method for Task 1")
+            print("Pass an argument for ML method for Task 1 (-L, -K, -S, -A)")
 
 
     elif Task2 == True:
