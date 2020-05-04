@@ -23,6 +23,8 @@ Solution  = Data.Get_data(filename='/Solution.csv')
 F_temp    = Data.Get_data(filename='/ForecastTemplate.csv')
 WF_input  = Data.Get_data(filename='/WeatherForecastInput.csv')
 
+timestamps = Solution.index
+times = pd.to_datetime(timestamps)
 
 # Maa gjores i hver task?
 #features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution)
@@ -96,8 +98,8 @@ if __name__ == '__main__':
         accuracy among the machine learningapproaches.
         """
 
-
-        """ Fra noen andre, men kult!
+        '''
+        #Fra noen andre, men kult!
         data = TrainData
         weather_forecast = WF_input
 
@@ -110,7 +112,7 @@ if __name__ == '__main__':
         cmap = sns.cubehelix_palette(start=1, light=1, as_cmap=True)
         ax=sns.kdeplot(data['zonal'], data['meridional'], cmap=cmap, shade=True, cut=5)
         ax=sns.kdeplot(weather_forecast['zonal'], weather_forecast['meridional'], cmap='Reds', shade=False, cut=5,shade_lowest=False)
-        """
+        '''
 
 
         if linreg == True:
@@ -132,7 +134,7 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, title="Linear Regression")
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression")
 
         elif KNN == True:
 
@@ -160,7 +162,7 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, title="k-Nearest Neighbors (kNN). k=%g"%k)
+                P.prediction_solution_plot(y_pred, power_solution, times, title="k-Nearest Neighbors (kNN). k=%g"%k)
 
         elif SVR == True:
 
@@ -178,7 +180,7 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, title="Support Vector Regression (SVR)")
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Support Vector Regression (SVR)")
 
         elif ANN == True:
 
@@ -196,7 +198,7 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, title="Artificial Neural Network (ANN)")
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Artificial Neural Network (ANN)")
 
         else:
             print("Pass an argument for ML method for Task 1 (-L, -K, -S, -A)")
