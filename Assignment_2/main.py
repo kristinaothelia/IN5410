@@ -130,15 +130,9 @@ if __name__ == '__main__':
             print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
             print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
 
-<<<<<<< HEAD
-            #if Plot == True:
-            # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression")
-=======
             if Plot == True:
                 # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, title="Linear Regression")
->>>>>>> 5000458035915aadb6dea843ee4130f275d4eec6
 
         elif KNN == True:
 
