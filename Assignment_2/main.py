@@ -18,10 +18,10 @@ import plots                as P
 # Python 3.7.4
 #------------------------------------------------------------------------------
 
-TrainData = Data.Get_data(filename='/TrainData.csv')
-Solution  = Data.Get_data(filename='/Solution.csv')
-F_temp    = Data.Get_data(filename='/ForecastTemplate.csv')
-WF_input  = Data.Get_data(filename='/WeatherForecastInput.csv')
+TrainData = Data.Get_data(filename='/Data/TrainData.csv')
+Solution  = Data.Get_data(filename='/Data/Solution.csv')
+F_temp    = Data.Get_data(filename='/Data/ForecastTemplate.csv')
+WF_input  = Data.Get_data(filename='/Data/WeatherForecastInput.csv')
 
 timestamps = Solution.index
 times = pd.to_datetime(timestamps)
