@@ -53,7 +53,7 @@ def Data(TrainData, WF_input, Solution, meter='ten'):
 
 def Make_csv_dataset(prediction, time, name='test.csv'):
 
-    df = pd.DataFrame({'Time': time, 'Prediction': prediction.flatten()})
+    df = pd.DataFrame({'Timestamp': time, 'Forecast prediction': prediction.flatten()})
     df.to_csv(name, sep='\t', encoding='utf-8', index=False)
 
 
