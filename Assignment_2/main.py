@@ -84,12 +84,7 @@ if __name__ == '__main__':
         Find the windspeed for the whole month of 11.2013 in the file
         WeatherForecastInput.csv. For each training model and the wind speed
         data, you predict the wind power generation in 11.2013 and save
-        the predictedresults in the files:
-
-        ForecastTemplate1-LR.csv for the linreg model
-        ForecastTemplate1-kNN.csv for the kNN model
-        ForecastTemplate1-SVR.csv for the SVR model
-        ForecastTemplate1-NN.csv for the neural networks model
+        the predictedresults in files.
 
         Finally, you evaluate the prediction accuracy.
         You comparethe predicted wind power and the true wind power
@@ -125,7 +120,7 @@ if __name__ == '__main__':
             y_pred, power_solution = ML.linreg(features, target, pred_features, power_solution)
 
             # Save predicted results in .cvs files
-            # altsaa y_pred til csv? ja, tror det..? ########
+            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-LR.csv')
 
             # Accuracy, R**2
             print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
@@ -152,7 +147,7 @@ if __name__ == '__main__':
             y_pred, power_solution = ML.kNN(features, target, pred_features, power_solution, k, weights)
 
             # Save predicted results in .cvs files
-            ###
+            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-kNN.csv')
 
             # Accuracy metrics
             print("\nMetrics when k=%g, weight=%s" %(k, weights))
@@ -171,7 +166,7 @@ if __name__ == '__main__':
             y_pred, power_solution = ML.SVR_func(TrainData, WF_input, Solution)
 
             # Save predicted results in .cvs files
-            ###
+            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-SVR.csv')
 
             # Accuracy metrics
             print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
@@ -189,7 +184,7 @@ if __name__ == '__main__':
             #y_pred, power_solution = ML.
 
             # Save predicted results in .cvs files
-            ###
+            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-NN.csv')
 
             # Accuracy
             print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))

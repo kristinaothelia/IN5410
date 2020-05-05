@@ -4,7 +4,7 @@ IN5410 - Energy informatics | Assignment 2
 This file...
 
 """
-import os, random, xlsxwriter, sys, argparse
+import os, random, xlsxwriter, sys, argparse, csv
 
 import numpy               	as np
 import pandas               as pd
@@ -50,6 +50,13 @@ def Data(TrainData, WF_input, Solution, meter='ten'):
         TrainData.drop(columns=['U10','V10','WS10', 'U100', 'V100', 'WS100'], axis=1, inplace=True)
 
     return features, target, pred_features, power_solution
+
+def Make_csv_dataset(prediction, time, name='test.csv'):
+
+    df = pd.DataFrame({'Time': time, 'Prediction': prediction.flatten()})
+    df.to_csv(name, sep='\t', encoding='utf-8', index=False)
+
+
 
 # ----------------------------------------------------------------------------
 # Maatte bare sette det inn i en def for det ble rart naar man kjorte main :P
