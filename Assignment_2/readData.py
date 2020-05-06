@@ -25,6 +25,7 @@ def Get_data(filename='/TrainData.csv'):
     Data     = pd.read_csv(fn, header=0, skiprows=0, index_col=0, na_values=nanDict)
     return Data
 
+
 def Data(TrainData, WF_input, Solution, meter=''):
 
     if meter == 'T1':
@@ -48,12 +49,8 @@ def Data(TrainData, WF_input, Solution, meter=''):
     pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Predicted power
     power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Actual power data
 
-    #print("\nFeatures:")
-    #print(features)
-    #print("\nTargets:")
-    #print(target)
-
     return features, target, pred_features, power_solution
+
 
 def Make_csv_dataset(prediction, time, name='test.csv'):
 
