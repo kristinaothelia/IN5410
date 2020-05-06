@@ -4,7 +4,7 @@ IN5410 - Energy informatics | Assignment 2
 import datetime
 import matplotlib.pyplot 		as plt
 import matplotlib.dates         as mdates
-import readData                 as Data
+import Data                     as Data
 import MachineLearning          as ML
 
 from matplotlib.ticker          import MaxNLocator

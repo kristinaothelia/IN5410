@@ -15,7 +15,7 @@ y_test						| power_solution
 import sys
 import numpy  					as np
 import pandas 					as pd
-import readData             	as Data
+import Data             		as Data
 import matplotlib.pyplot		as plt
 
 from sklearn.model_selection 	import GridSearchCV

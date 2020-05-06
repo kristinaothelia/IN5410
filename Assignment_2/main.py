@@ -8,7 +8,7 @@ import numpy               	as np
 import pandas               as pd
 import seaborn              as sns
 
-import readData             as Data
+import Data                 as Data
 import MachineLearning      as ML
 import plots                as P
 import user_input           as UI
