@@ -5,6 +5,12 @@ Linear Regression           | linreg
 k-Nearest Neighbor          | kNN
 Supported Vector Regression | SVR
 Artificial Neural Networks  | ANN
+
+We use the following train/test data for all Machine Learning methods:
+X_train						| features
+X_test						| pred_features
+y_train						| target
+y_test						| power_solution
 """
 import sys
 import numpy  					as np
@@ -136,16 +142,24 @@ def SVR_func(features, target, pred_features, power_solution, default=True):
 	#https://medium.com/pursuitnotes/support-vector-regression-in-6-steps-with-python-c4569acd062d
 
 	if default:
-		svr_reg = SVR(kernel='rbf', C=0.01, gamma='scale', epsilon=0.1)
+		kernel	= 'rbf'
+		C		= 0.01
+		gamma	= 'scale'
+		epsilon = 0.1
+		svr_reg = SVR(kernel=kernel, C=C, gamma=gamma, epsilon=epsilon)
 
 	else:
 		best_params = SVR_gridsearch(features, target, pred_features, power_solution)
 		svr_reg = SVR().set_params(**best_params) # kernel='rbf' see link/documentation to choose kernel
+		kernel	= best_params['kernel']
+		C		= best_params['C']
+		gamma	= best_params['gamma']
+		epsilon = best_params['epsilon']
 
 	svr_reg.fit(features, target)
 	y_pred = svr_reg.predict(pred_features)
 
-	return y_pred, power_solution
+	return y_pred, power_solution, kernel, C, gamma, epsilon
 
 
 def ANN_gridsearch(features, target, pred_features, power_solution):

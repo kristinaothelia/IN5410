@@ -8,9 +8,6 @@ import numpy               	as np
 import pandas               as pd
 import seaborn              as sns
 
-#from scipy.optimize 		import linprog
-#from random 				import seed
-
 import readData             as Data
 import MachineLearning      as ML
 import plots                as P
@@ -36,13 +33,12 @@ if __name__ == '__main__':
     group.add_argument('-2', '--Task2', action="store_true", help="Task 2")
     group.add_argument('-3', '--Task3', action="store_true", help="Task 3")
 
-    # Optional argument for plotting
+    # Optional argument for methods (Task 1) and plotting
     parser.add_argument('-X', '--Plot', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-L', '--linreg', action='store_true', help="Linreg", required=False)
+    parser.add_argument('-L', '--LN', action='store_true', help="LN", required=False)
     parser.add_argument('-K', '--KNN', action='store_true', help="kNN", required=False)
     parser.add_argument('-S', '--SVR', action='store_true', help="SVR", required=False)
     parser.add_argument('-A', '--ANN', action='store_true', help="ANN", required=False)
-    #parser.add_argument('-P', '--Params', action='store_true', help="Find parameters", required=False)
 
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
@@ -56,11 +52,10 @@ if __name__ == '__main__':
     Task2    = args.Task2
     Task3    = args.Task3
     Plot     = args.Plot
-    linreg   = args.linreg
+    LN       = args.LN
     KNN      = args.KNN
     SVR      = args.SVR
     ANN      = args.ANN
-    #Params   = args.Params
     Warnings = args.Warnings
 
     if not Warnings:
@@ -74,21 +69,12 @@ if __name__ == '__main__':
         print("--"*20)
 
         """
-        X_train						| features
-        X_test						| pred_features
-        y_train						| target
-        y_test						| power_solution
-
         Find the windspeed for the whole month of 11.2013 in the file
         WeatherForecastInput.csv. For each training model and the wind speed
-        data, you predict the wind power generation in 11.2013 and save
-        the predictedresults in files.
-
-        Finally, you evaluate the prediction accuracy.
-        You comparethe predicted wind power and the true wind power
-        measurements (in the file Solution.csv).
-        Please use the error metric RMSE to evaluate and compare the prediction
-        accuracy among the machine learningapproaches.
+        data, we predict the wind power generation in 11.2013 and save
+        the predicted results in files.
+        We then evaluate the prediction accuracy, by MSE, RMSE and R2, with
+        the true wind power measurements (in the file Solution.csv).
         """
 
         '''
@@ -107,16 +93,12 @@ if __name__ == '__main__':
         ax=sns.kdeplot(weather_forecast['zonal'], weather_forecast['meridional'], cmap='Reds', shade=False, cut=5,shade_lowest=False)
         '''
 
-        # Ha denne her? Er lik for alle Task 1 oppgaver
-
         # For all Task 1 methods.
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
 
-        if linreg == True:
+        if LN == True:
 
             print("Linear Regression\n")
-            # Data preprocessing
-            #features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
 
             # Linear Regression
             y_pred, power_solution = ML.linreg(features, target, pred_features, power_solution)
@@ -125,12 +107,9 @@ if __name__ == '__main__':
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-LR.csv')
 
             # Accuracy, R**2
-            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
-            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
+            P.Metrics(power_solution, y_pred, method="Linear Regression (LR)", filename="Model_evaluation/Task1_RMSE_LR.txt")
 
-            if Plot == True:
-                # Graphical illustration
+            if Plot == True:     # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression", figname="Plots/Task1_LR.png", savefig=True)
 
 
@@ -144,15 +123,12 @@ if __name__ == '__main__':
 
             if input == 1:
                 y_pred, power_solution, k, weights, p = ML.kNN(features, target, pred_features, power_solution, default=True)
-
             elif input == 2:
                 best_params = ML.kNN_gridsearch(features, target, pred_features, power_solution)
                 y_pred, power_solution, k, weights, p = ML.kNN(features, target, pred_features, power_solution, best_params, BestParams=True)
-
             elif input == 3:
                 best_params = ML.kNN_gridsearch(features, target, pred_features, power_solution, plot=True)
                 y_pred, power_solution, k, weights, p = ML.kNN(features, target, pred_features, power_solution, best_params, BestParams=False)
-
             else:
                 print("Enter 1, 2 or 3, then enter"); exit()
 
@@ -161,12 +137,9 @@ if __name__ == '__main__':
 
             # Accuracy metrics
             print("\nMetrics when k=%g, p=%g, weight=%s" %(k, p, weights))
-            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
-            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
+            P.Metrics(power_solution, y_pred, param="k=%g, p=%g, weight=%s" %(k, p, weights), method="k-Nearest Neighbors (kNN)", filename="Model_evaluation/Task1_RMSE_kNN.txt")
 
-            if Plot == True:
-                # Graphical illustration
+            if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times, title="k-Nearest Neighbors (kNN). k=%g"%k, figname="Plots/Task1_kNN.png", savefig=True)
 
         elif SVR == True:
@@ -176,11 +149,9 @@ if __name__ == '__main__':
             input = int(input("Do you want to: \n1) Use predefined values based on default- and GridSearchCV values? (Time efficient option) \n2) Use the 'best parameters' from GridSearchCV? \nEnter 1 or 2 (int): "))
 
             if input == 1:
-                y_pred, power_solution = ML.SVR_func(features, target, pred_features, power_solution)
-
+                y_pred, power_solution, kernel, C, gamma, epsilon = ML.SVR_func(features, target, pred_features, power_solution)
             elif input == 2:
-                y_pred, power_solution = ML.SVR_func(features, target, pred_features, power_solution, default=False)
-
+                y_pred, power_solution, kernel, C, gamma, epsilon = ML.SVR_func(features, target, pred_features, power_solution, default=False)
             else:
                 print("Enter 1 or 2, then enter"); exit()
 
@@ -189,19 +160,14 @@ if __name__ == '__main__':
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-SVR.csv')
 
             # Accuracy metrics
-            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
-            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
+            P.Metrics(power_solution, y_pred, param="kernel=%s, C=%g, gamma=%s, eps=%g" %(kernel, C, gamma, epsilon), method="Support Vector Regression (SVR)", filename="Model_evaluation/Task1_RMSE_SVR.txt")
 
-            if Plot == True:
-                # Graphical illustration
+            if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times, title="Support Vector Regression (SVR)", figname="Plots/Task1_SVR.png", savefig=True)
 
         elif ANN == True:
 
             print("ANN\n")
-
-            #features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
 
             y_pred, power_solution = ML.ANN(features, target, pred_features, power_solution)
 
@@ -209,12 +175,9 @@ if __name__ == '__main__':
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-NN.csv')
 
             # Accuracy
-            print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
-            print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
-            print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
+            P.Metrics(power_solution, y_pred, method="Artificial Neural Network (ANN)", filename="Model_evaluation/Task1_RMSE_ANN.txt")
 
-            if Plot == True:
-                # Graphical illustration
+            if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times, title="Artificial Neural Network (ANN)", figname="Plots/Task1_ANN.png", savefig=True)
 
         else:
@@ -238,11 +201,9 @@ if __name__ == '__main__':
         Data.Make_csv_dataset(prediction=y_pred_mlr, time=times, name='Predictions/ForecastTemplate2.csv')
 
         # Accuracy
-        print("RMSE:          LR=%.3f, MLR=%.3f"% (ML.RMSE(power_solution, y_pred_lr), ML.RMSE(power_solution, y_pred_mlr)))
-        print("R2 (variance): LR=%.3f, MLR=%.3f"% (ML.R2(power_solution, y_pred_lr), ML.R2(power_solution, y_pred_mlr)))
+        P.Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="Model_evaluation/Task2_RMSE.txt")
 
-        if Plot == True:
-            # Graphical illustration
+        if Plot == True:    # Graphical illustration
             P.prediction_solution_plot_T2(y_pred_lr, y_pred_mlr, power_solution, times, title="LR and MLR", figname="Plots/Task2.png", savefig=True)
 
 
@@ -251,3 +212,11 @@ if __name__ == '__main__':
         print("Task 3")
 
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
+
+        """
+        # Accuracy
+        P.Metrics(power_solution, y_pred, method="", filename="Model_evaluation/Task3.txt")
+
+        if Plot == True:    # Graphical illustration
+            P.prediction_solution_plot(y_pred, power_solution, times, title="???", figname="Plots/Task3.png", savefig=True)
+        """

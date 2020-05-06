@@ -5,8 +5,10 @@ import datetime
 import matplotlib.pyplot 		as plt
 import matplotlib.dates         as mdates
 import readData                 as Data
+import MachineLearning          as ML
 
 from matplotlib.ticker          import MaxNLocator
+from prettytable                import PrettyTable
 
 # -----------------------------------------------------------------------------
 
@@ -52,3 +54,30 @@ def prediction_solution_plot_T2(y_pred, y_pred_mlr, power_solution, date, title=
         plt.savefig(figname)
     else:
         plt.show()
+
+def Metrics(power_solution, y_pred, param="", method="", filename=""):
+
+    x = PrettyTable()
+    x.field_names = [param, "MSE", "RMSE", "R2"]
+
+    x.add_row([method,  "%.3f"% ML.MSE(power_solution, y_pred), "%.3f"% ML.RMSE(power_solution, y_pred), "%.3f"% ML.R2(power_solution, y_pred)])
+    #x.add_row(["RMSE", "%.3f"% ML.RMSE(power_solution, y_pred)])
+    #x.add_row(["R2",   "%.3f"% ML.R2(power_solution, y_pred)])
+
+    print(x)
+    with open(filename, 'w') as w:
+        w.write(str(x))
+
+def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename=""):
+
+    x = PrettyTable()
+    x.field_names = ["", "Linear Regression", "Multiple Linear Regression"]
+    x.align[""] = "l"
+
+    x.add_row(["MSE",  "%.3f"% ML.MSE(power_solution, y_pred_lr),  "%.3f"% ML.MSE(power_solution, y_pred_mlr)])
+    x.add_row(["RMSE", "%.3f"% ML.RMSE(power_solution, y_pred_lr), "%.3f"% ML.RMSE(power_solution, y_pred_mlr)])
+    x.add_row(["R2",   "%.3f"% ML.R2(power_solution, y_pred_lr),   "%.3f"% ML.R2(power_solution, y_pred_mlr)])
+
+    print(x)
+    with open(filename, 'w') as w:
+        w.write(str(x))
