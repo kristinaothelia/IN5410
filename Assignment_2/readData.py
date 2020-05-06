@@ -1,8 +1,7 @@
 """
 IN5410 - Energy informatics | Assignment 2
 
-This file...
-
+Data processing
 """
 import os, random, xlsxwriter, sys, argparse, csv
 
@@ -26,28 +25,33 @@ def Get_data(filename='/TrainData.csv'):
     Data     = pd.read_csv(fn, header=0, skiprows=0, index_col=0, na_values=nanDict)
     return Data
 
+def Data(TrainData, WF_input, Solution, meter=''):
 
-def Data(TrainData, WF_input, Solution, meter='ten'):
+    if meter == 'T1':
+        # Fix data for the specific task
+        TrainData.drop(columns=['U10', 'V10', 'U100', 'V100', 'WS100'], axis=1, inplace=True)
+        WF_input.drop(columns =['U10', 'V10', 'U100', 'V100', 'WS100'], axis=1, inplace=True)
+
+    elif meter == 'T2':
+        TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
+        WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
+
+    elif meter == 'T3':
+        TrainData.drop(columns=['U10','V10','WS10', 'U100', 'V100', 'WS100'], axis=1, inplace=True)
+
+    else:
+        print("Note: You are now using all data columns in dataset TrainData and WF_input")
 
     features = TrainData.loc[:, (TrainData.columns != 'POWER')].values
     target   = TrainData.loc[:, TrainData.columns == 'POWER'].values        # Targets
 
-    pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Targets
-    power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Targets
+    pred_features  = WF_input.loc[:, WF_input.columns != 'POWER'].values    # Predicted power
+    power_solution = Solution.loc[:, Solution.columns == 'POWER'].values    # Actual power data
 
     #print("\nFeatures:")
-	#print(features)
-	#print("\nTargets:")
-	#print(target)
-
-    if meter == 'ten':  # Kalle None og den andre for task 3?
-        # Fix data for the specific task
-        TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
-        WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
-
-    elif meter == None:
-        # Remvoing all wind features, for task 3
-        TrainData.drop(columns=['U10','V10','WS10', 'U100', 'V100', 'WS100'], axis=1, inplace=True)
+    #print(features)
+    #print("\nTargets:")
+    #print(target)
 
     return features, target, pred_features, power_solution
 
@@ -55,64 +59,3 @@ def Make_csv_dataset(prediction, time, name='test.csv'):
 
     df = pd.DataFrame({'Timestamp': time, 'Forecast prediction': prediction.flatten()})
     df.to_csv(name, encoding='utf-8', index=False)
-
-
-
-# ----------------------------------------------------------------------------
-# Maatte bare sette det inn i en def for det ble rart naar man kjorte main :P
-def linreg_test():
-    from sklearn.linear_model  import LinearRegression
-    from sklearn.metrics       import mean_squared_error
-    # Data for training the model (x_train and y_train?):
-    TrainData = Get_data(filename='/TrainData.csv')
-
-    # Data for later prediction (X_test?):
-    WF_input  = Get_data(filename='/WeatherForecastInput.csv')
-
-    # Solution used to calculate error of the predictions (y_test?)
-    Solution  = Get_data(filename='/Solution.csv')
-
-    # Does not seem like any of the datasets contain nan-values:
-
-    #TrainData = TrainData.replace(r'^\s*$', np.nan, regex=True)
-    #TrainData = pd.DataFrame.dropna(TrainData, axis=0, how='any')
-    #WF_input  = WF_input.replace(r'^\s*$', np.nan, regex=True)
-    #WF_input = pd.DataFrame.dropna(WF_input, axis=0, how='any')
-
-
-    # 'Power' is the 'target' and the other columns are the 'features'
-    # Only use the features for 10m, so dropping the 100m colums
-
-    TrainData.drop(columns=['U100', 'V100', 'WS100'], axis=1, inplace=True)
-    WF_input.drop(columns =['U100', 'V100', 'WS100'], axis=1, inplace=True)
-
-    print(TrainData)
-
-    features, target, pred_features, power_solution = Data(TrainData, WF_input, Solution)
-
-    linreg = LinearRegression()
-    linreg.fit(features, target) #training the algorithm
-
-    y_pred = linreg.predict(pred_features)
-
-    compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
-    print(compare_values)
-
-    mse = mean_squared_error(power_solution, y_pred)
-    print("mse_linreg: ", mse)
-
-    #squared:boolean value, optional (default = True)
-    #If True returns MSE value, if False returns RMSE value.
-    # Funker ikke...
-    #rmse = mean_squared_error(power_solution, y_pred, squared=False)
-    rmse = np.sqrt(mean_squared_error(power_solution, y_pred))
-    print("rmse_linreg: ", rmse)
-
-#linreg_test()
-
-#sc_feature = StandardScaler()
-#sc_target = StandardScaler()
-#feature = sc_X.fit_transform(X)
-#target = sc_y.fit_transform(y)
-
-# Save feature and target as arrays as we did in fys-stk? hmm..

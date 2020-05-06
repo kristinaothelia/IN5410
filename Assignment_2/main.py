@@ -8,8 +8,8 @@ import numpy               	as np
 import pandas               as pd
 import seaborn              as sns
 
-from scipy.optimize 		import linprog
-from random 				import seed
+#from scipy.optimize 		import linprog
+#from random 				import seed
 
 import readData             as Data
 import MachineLearning      as ML
@@ -23,11 +23,9 @@ Solution  = Data.Get_data(filename='/Data/Solution.csv')
 F_temp    = Data.Get_data(filename='/Data/ForecastTemplate.csv')
 WF_input  = Data.Get_data(filename='/Data/WeatherForecastInput.csv')
 
-timestamps = Solution.index
+timestamps = F_temp.index #Solution.index. Endra til F_temp for vi bruker ikke denne til noe..? Den inneholder bare timestamps
 times = pd.to_datetime(timestamps)
 
-# Maa gjores i hver task?
-#features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution)
 
 if __name__ == '__main__':
 
@@ -109,12 +107,16 @@ if __name__ == '__main__':
         ax=sns.kdeplot(weather_forecast['zonal'], weather_forecast['meridional'], cmap='Reds', shade=False, cut=5,shade_lowest=False)
         '''
 
+        # Ha denne her? Er lik for alle Task 1 oppgaver
+
+        # For all Task 1 methods.
+        features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
 
         if linreg == True:
 
             print("Linear Regression\n")
             # Data preprocessing
-            features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='ten')
+            #features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
 
             # Linear Regression
             y_pred, power_solution = ML.linreg(features, target, pred_features, power_solution)
@@ -129,41 +131,59 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression")
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression", figname="Plots/Task1_LR.png", savefig=True)
+
 
         elif KNN == True:
 
             print("kNN")
             # Data preprocessing
-            features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='ten')
+            #features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
 
-            # Find parameters
-            # Faar bare den hoyeste k-verdien... overfitting?
-            #ML.kNN_parameters(features, target, pred_features, power_solution)
+            input = int(input("Do you want to: \n1) Use predefined values based on default- and GridSearchCV values? (Time efficient option) \n2) Use the 'best parameters' from GridSearchCV? \n3) Enter your own parameters based on a n_neighbors (k) plot? \nEnter 1, 2 or 3 (int): "))
 
-            # k-Nearest Neighbor
-            k = 12
-            weights = 'uniform'
-            y_pred, power_solution = ML.kNN(features, target, pred_features, power_solution, k, weights)
+            if input == 1:
+                y_pred, power_solution, k, weights, p = ML.kNN(features, target, pred_features, power_solution, default=True)
+
+            elif input == 2:
+                best_params = ML.kNN_gridsearch(features, target, pred_features, power_solution)
+                y_pred, power_solution, k, weights, p = ML.kNN(features, target, pred_features, power_solution, best_params, BestParams=True)
+
+            elif input == 3:
+                best_params = ML.kNN_gridsearch(features, target, pred_features, power_solution, plot=True)
+                y_pred, power_solution, k, weights, p = ML.kNN(features, target, pred_features, power_solution, best_params, BestParams=False)
+
+            else:
+                print("Enter 1, 2 or 3, then enter"); exit()
 
             # Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-kNN.csv')
 
             # Accuracy metrics
-            print("\nMetrics when k=%g, weight=%s" %(k, weights))
+            print("\nMetrics when k=%g, p=%g, weight=%s" %(k, p, weights))
             print("MSE:           %.3f"% ML.MSE(power_solution, y_pred))
             print("RMSE:          %.3f"% ML.RMSE(power_solution, y_pred))
             print("R2 (variance): %.3f"% ML.R2(power_solution, y_pred))
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="k-Nearest Neighbors (kNN). k=%g"%k)
+                P.prediction_solution_plot(y_pred, power_solution, times, title="k-Nearest Neighbors (kNN). k=%g"%k, figname="Plots/Task1_kNN.png", savefig=True)
 
         elif SVR == True:
 
             print("SVR\n")
 
-            y_pred, power_solution = ML.SVR_func(TrainData, WF_input, Solution)
+            input = int(input("Do you want to: \n1) Use predefined values based on default- and GridSearchCV values? (Time efficient option) \n2) Use the 'best parameters' from GridSearchCV? \nEnter 1 or 2 (int): "))
+
+            if input == 1:
+                y_pred, power_solution = ML.SVR_func(features, target, pred_features, power_solution)
+
+            elif input == 2:
+                y_pred, power_solution = ML.SVR_func(features, target, pred_features, power_solution, default=False)
+
+            else:
+                print("Enter 1 or 2, then enter"); exit()
+
 
             # Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-SVR.csv')
@@ -175,13 +195,15 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Support Vector Regression (SVR)")
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Support Vector Regression (SVR)", figname="Plots/Task1_SVR.png", savefig=True)
 
         elif ANN == True:
 
             print("ANN\n")
 
-            #y_pred, power_solution = ML.
+            #features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T1')
+
+            y_pred, power_solution = ML.ANN(features, target, pred_features, power_solution)
 
             # Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-NN.csv')
@@ -193,7 +215,7 @@ if __name__ == '__main__':
 
             if Plot == True:
                 # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Artificial Neural Network (ANN)")
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Artificial Neural Network (ANN)", figname="Plots/Task1_ANN.png", savefig=True)
 
         else:
             print("Pass an argument for ML method for Task 1 (-L, -K, -S, -A)")
@@ -203,7 +225,29 @@ if __name__ == '__main__':
 
         print("Task 2")
 
+        features_mlr, target_mlr, pred_features_mlr, power_solution_mlr = Data.Data(TrainData, WF_input, Solution, meter='T2')
+        # For LR:
+        TrainData.drop(columns=['U10', 'V10'], axis=1, inplace=True)
+        WF_input.drop(columns=['U10', 'V10'], axis=1, inplace=True)
+        features_lr, target_lr, pred_features_lr, power_solution_lr = Data.Data(TrainData, WF_input, Solution)
+
+        y_pred_lr,  power_solution  = ML.linreg(features_lr, target_lr, pred_features_lr, power_solution_lr)
+        y_pred_mlr, power_solution = ML.linreg(features_mlr, target_mlr, pred_features_mlr, power_solution_mlr)
+
+        # Save predicted results in .cvs files
+        Data.Make_csv_dataset(prediction=y_pred_mlr, time=times, name='Predictions/ForecastTemplate2.csv')
+
+        # Accuracy
+        print("RMSE:          LR=%.3f, MLR=%.3f"% (ML.RMSE(power_solution, y_pred_lr), ML.RMSE(power_solution, y_pred_mlr)))
+        print("R2 (variance): LR=%.3f, MLR=%.3f"% (ML.R2(power_solution, y_pred_lr), ML.R2(power_solution, y_pred_mlr)))
+
+        if Plot == True:
+            # Graphical illustration
+            P.prediction_solution_plot_T2(y_pred_lr, y_pred_mlr, power_solution, times, title="LR and MLR", figname="Plots/Task2.png", savefig=True)
+
 
     elif Task3 == True:
 
         print("Task 3")
+
+        features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
