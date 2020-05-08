@@ -50,11 +50,11 @@ if __name__ == '__main__':
     group.add_argument('-3', '--Task3', action="store_true", help="Task 3")
 
     # Optional argument for methods (Task 1) and plotting
-    parser.add_argument('-X', '--Plot', action='store_true', help="Plotting", required=False)
-    parser.add_argument('-L', '--LR',   action='store_true', help="LR", required=False)
-    parser.add_argument('-K', '--KNN',  action='store_true', help="kNN", required=False)
-    parser.add_argument('-S', '--SVR',  action='store_true', help="SVR", required=False)
-    parser.add_argument('-A', '--ANN',  action='store_true', help="ANN", required=False)
+    parser.add_argument('-X', '--Plot',  action='store_true', help="Plotting", required=False)
+    parser.add_argument('-L', '--LR',    action='store_true', help="LR", required=False)
+    parser.add_argument('-K', '--KNN',   action='store_true', help="kNN", required=False)
+    parser.add_argument('-S', '--SVR',   action='store_true', help="SVR", required=False)
+    parser.add_argument('-F', '--FFNN',  action='store_true', help="FFNN", required=False)
 
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
@@ -64,15 +64,15 @@ if __name__ == '__main__':
 
     args  = parser.parse_args()
 
-    Task1    = args.Task1
-    Task2    = args.Task2
-    Task3    = args.Task3
-    Plot     = args.Plot
-    LR       = args.LR
-    KNN      = args.KNN
-    SVR      = args.SVR
-    ANN      = args.ANN
-    Warnings = args.Warnings
+    Task1     = args.Task1
+    Task2     = args.Task2
+    Task3     = args.Task3
+    Plot      = args.Plot
+    LR        = args.LR
+    KNN       = args.KNN
+    SVR       = args.SVR
+    FFNN      = args.FFNN
+    Warnings  = args.Warnings
 
     if not Warnings:
         # If the argument -W / --warnings is provided,
@@ -144,20 +144,20 @@ if __name__ == '__main__':
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times, title="Support Vector Regression (SVR)", figname="Plots/Task1_SVR.png", savefig=True)
 
-        elif ANN == True:
+        elif FFNN == True:
 
-            print("Artificial Neural Network (ANN)\n")
+            print("Feed Forward Neural Network (FFNN)\n")
 
-            y_pred, power_solution = ML.ANN(features, target, pred_features, power_solution)
+            y_pred, power_solution = ML.FFNN(features, target, pred_features, power_solution)
 
-            # Save predicted results in .cvs files
+            #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-NN.csv')
 
             # Accuracy
-            P.Metrics(power_solution, y_pred, method="Artificial Neural Network (ANN)", filename="Model_evaluation/Task1_RMSE_ANN.txt")
+            P.Metrics(power_solution, y_pred, method="Feed Forward Neural Network (ANN)", filename="Model_evaluation/Task1_RMSE_FFNN.txt")
 
             if Plot == True:    # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Artificial Neural Network (ANN)", figname="Plots/Task1_ANN.png", savefig=True)
+                P.prediction_solution_plot(y_pred, power_solution, times, title="Feed Forward Neural Network (FFNN)", figname="Plots/Task1_FFNN.png", savefig=True)
 
         else:
             print("Pass an argument for ML method for Task 1 (-L, -K, -S, -A)")

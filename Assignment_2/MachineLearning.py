@@ -13,17 +13,19 @@ y_train						| target
 y_test						| power_solution
 """
 import sys
+import Data             		as Data
 import numpy  					as np
 import pandas 					as pd
-import Data             		as Data
 import matplotlib.pyplot		as plt
 
 from sklearn.model_selection 	import GridSearchCV
+from sklearn.neural_network  	import MLPRegressor
 from sklearn.preprocessing 		import StandardScaler
 from sklearn.linear_model     	import LinearRegression
 from sklearn.metrics       	  	import mean_squared_error, r2_score
 from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
+
 # -----------------------------------------------------------------------------
 
 
@@ -162,12 +164,86 @@ def SVR_func(features, target, pred_features, power_solution, default=True):
 	return y_pred, power_solution, kernel, C, gamma, epsilon
 
 
-def ANN_gridsearch(features, target, pred_features, power_solution):
+def FFNN_gridsearch(features, target, pred_features, power_solution):
 	""" Finding the best parameters using GridSearchCV """
 	pass
 
-def ANN(features, target, pred_features, power_solution):
-    pass
+'''
+def FFNN_Heatmap_MSE_R2():
+
+	eta_vals   = np.logspace(-5, -1, 5)
+	lmbd_vals  = np.logspace(-5, -1, 5)
+
+	MSE        = np.zeros((len(eta_vals), len(lmbd_vals)))
+	R2         = np.zeros((len(eta_vals), len(lmbd_vals)))
+	sns.set()
+
+	for i, eta in enumerate(eta_vals):
+		for j, lmbd in enumerate(lmbd_vals):
+
+			reg = MLPRegressor(	activation="relu", # Eller en annen?
+			    				solver="sgd",
+								alpha=lmbd,
+			    				learning_rate_init=eta,
+			    				max_iter=epochs,
+			    				tol=1e-5 )
+
+			reg.fit(X_train, y_train)
+			y_pred    = reg.predict(X_test)  # data
+			model     = reg.predict(X).reshape(N,N)
+
+			MSE[i][j] = func.MeanSquaredError(ZZ, model)
+			R2[i][j]  = func.R2_ScoreFunction(ZZ, model)
+
+			print("Learning rate = ", eta)
+			print("Lambda =        ", lmbd)
+			print("MSE score:      ", func.MeanSquaredError(ZZ, model))
+			print("R2 score:       ", func.R2_ScoreFunction(ZZ, model))
+			print()
+
+	etas = ["{:0.2e}".format(i) for i in eta_vals]
+
+	fig, ax = plt.subplots()
+	sns.heatmap(MSE, annot=True, xticklabels=lmbd_vals, yticklabels=etas, ax=ax, linewidths=.3, linecolor="black")
+	ax.set_title("MSE scores (sklearn)")
+	ax.set_ylabel("$\\eta$")
+	ax.set_xlabel("$\\lambda$")
+	plt.show()
+
+	fig, ax = plt.subplots()
+	sns.heatmap(R2, annot=True, xticklabels=lmbd_vals, yticklabels=etas, ax=ax, linewidths=.3, linecolor="black")
+	ax.set_title("Accuracy/R2 scores (sklearn)")
+	ax.set_ylabel("$\\eta$")
+	ax.set_xlabel("$\\lambda$")
+	plt.show()
+'''
+
+def FFNN(features, target, pred_features, power_solution):
+	
+	lamb  = 1e-4
+	eta   = 1e-2
+
+	reg = MLPRegressor(	activation="relu", # Eller en annen?
+						solver="sgd",
+						learning_rate='constant',
+						alpha=lamb,
+						learning_rate_init=eta,
+						max_iter=1000,
+						tol=1e-5 )
+
+	reg    = reg.fit(features, target)        # Training the model
+	y_pred = reg.predict(pred_features)       # Predicting
+	#pred_ = reg.predict(X).reshape(N,N)
+	#print("R2  score on test set: ", func.R2_ScoreFunction(ZZ, pred_))
+
+	# Compare predicted and actual values
+	compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
+	print("\nComapre power_solution and y_pred:\n", compare_values)
+
+	print("MSE on test set: ", mean_squared_error(power_solution, y_pred))
+	print("R2 score on test set: ", np.sqrt(mean_squared_error(power_solution, y_pred)))
+
+	return y_pred, power_solution
 
 
 def RNN_gridsearch(features, target, pred_features, power_solution):
