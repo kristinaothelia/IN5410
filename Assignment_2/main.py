@@ -148,13 +148,15 @@ if __name__ == '__main__':
 
             print("Feed Forward Neural Network (FFNN)\n")
 
-            # Need to check if the best value is within the range, and run more values
-            eta_vals   = np.logspace(-5, -1, 2)  # 5
-            lmbd_vals  = np.logspace(-5, -1, 2)  # 5
+            # Need to check if the best value is within the range, if not, adjust range
+            eta_vals   = np.logspace(-5, -1, 5)
+            lmbd_vals  = np.logspace(-5, -1, 5)
 
+            # Calculating MSEs, RMSEs and R2s that to use in Heatmap_MSE_R2
             MSE_range, RMSE_range, R2_range = \
             ML.FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals)
 
+            # Creating heatmaps of MSE, RMSE and R2 to choose the best value
             P.Heatmap_MSE_R2(MSE_range, RMSE_range, R2_range, lmbd_vals, eta_vals,\
                             title='FFNN',\
                             figname='Model_evaluation/FFNN',\

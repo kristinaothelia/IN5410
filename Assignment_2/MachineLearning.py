@@ -173,6 +173,7 @@ def FFNN_gridsearch(features, target, pred_features, power_solution):
 
 def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals):
 	"""
+	Creating MSE, RMSE and R2 values for a heatmap illustrating the best value 
 	Just used what we did in fys-stk first, maybe we can use gridsearch instead
 	"""
 
@@ -213,7 +214,11 @@ def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_val
 	return MSE_, RMSE_, R2_
 
 def FFNN(features, target, pred_features, power_solution):
+	"""
+	Feed Forward Neural Network
+	"""
 	
+	# Need to update these to the best values
 	lamb  = 1e-4
 	eta   = 1e-2
 
