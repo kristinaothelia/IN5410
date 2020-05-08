@@ -148,6 +148,14 @@ if __name__ == '__main__':
 
             print("Feed Forward Neural Network (FFNN)\n")
 
+            eta_vals   = np.logspace(-5, -1, 2)  # 5
+            lmbd_vals  = np.logspace(-5, -1, 2)  # 5
+
+            MSE_range, R2_range = \
+            ML.FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals)
+
+            #P.Heatmap_MSE_R2(MSE_range, R2_range, lmbd_vals, eta_vals, title="", figname='', savefig=False)
+
             y_pred, power_solution = ML.FFNN(features, target, pred_features, power_solution)
 
             #Save predicted results in .cvs files

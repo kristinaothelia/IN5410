@@ -2,10 +2,12 @@
 IN5410 - Energy informatics | Assignment 2
 """
 import datetime
+
 import matplotlib.pyplot 		as plt
 import matplotlib.dates         as mdates
-import Data                     as Data
 import MachineLearning          as ML
+import seaborn                  as sns
+import Data                     as Data
 
 from matplotlib.ticker          import MaxNLocator
 from prettytable                import PrettyTable
@@ -81,3 +83,25 @@ def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename=""):
     print(x)
     with open(filename, 'w') as w:
         w.write(str(x))
+
+    
+def Heatmap_MSE_R2(MSE, R2, lmbd_vals, eta_vals, title="", figname='', savefig=False):
+    fig, ax = plt.subplots(figsize=(8.5, 4.5))
+    sns.heatmap(MSE, annot=True, xticklabels=lmbd_vals, yticklabels=eta_vals, ax=ax, linewidths=.3, linecolor="black")
+    ax.set_title("MSE scores (sklearn)")
+    ax.set_ylabel("$\\eta$")
+    ax.set_xlabel("$\\lambda$")
+    if savefig:
+        plt.savefig(figname)
+    else:
+        plt.show()
+
+    fig, ax = plt.subplots(figsize=(8.5, 4.5))
+    sns.heatmap(R2, annot=True, xticklabels=lmbd_vals, yticklabels=eta_vals, ax=ax, linewidths=.3, linecolor="black")
+    ax.set_title("Accuracy/R2 scores (sklearn)")
+    ax.set_ylabel("$\\eta$")
+    ax.set_xlabel("$\\lambda$")
+    if savefig:
+        plt.savefig(figname)
+    else:
+        plt.show()
