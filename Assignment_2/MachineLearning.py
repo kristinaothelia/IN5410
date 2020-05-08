@@ -12,15 +12,13 @@ X_test						| pred_features
 y_train						| target
 y_test						| power_solution
 """
-import matplotlib.pyplot 		as plt
-import sys
-import Data             		as Data
-import numpy  					as np
-import pandas 					as pd
-import seaborn                  as sns
-import matplotlib.pyplot		as plt
 
-import plots               	    as P
+import sys
+
+import matplotlib.pyplot 		as plt
+import pandas 					as pd
+import numpy  					as np
+import Data             		as Data
 
 from sklearn.model_selection 	import GridSearchCV
 from sklearn.neural_network  	import MLPRegressor
@@ -174,12 +172,16 @@ def FFNN_gridsearch(features, target, pred_features, power_solution):
 
 
 def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals):
+	"""
+	Just used what we did in fys-stk first, maybe we can use gridsearch instead
+	"""
 
-	epochs     = 500 # 1000
+	epochs      = 500 #1000
 
-	MSE_        = np.zeros((len(eta_vals), len(lmbd_vals)))
-	R2_         = np.zeros((len(eta_vals), len(lmbd_vals)))
-	sns.set()
+	MSE_         = np.zeros((len(eta_vals), len(lmbd_vals)))
+	RMSE_        = np.zeros((len(eta_vals), len(lmbd_vals)))
+	R2_          = np.zeros((len(eta_vals), len(lmbd_vals)))
+
 
 	for i, eta in enumerate(eta_vals):
 		for j, lmbd in enumerate(lmbd_vals):
@@ -194,42 +196,29 @@ def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_val
 			reg.fit(features, target)
 			y_pred    = reg.predict(pred_features)  
 
-			MSE_[i][j] = MSE(power_solution, y_pred)
-			R2_[i][j]  = r2_score(power_solution, y_pred)
+			MSE_[i][j]  = MSE(power_solution, y_pred)
+			RMSE_[i][j] = RMSE(power_solution, y_pred)
+			R2_[i][j]   = r2_score(power_solution, y_pred)
 
+			# This can probably be taken away later, or insert in a 'if print=True'?
 			print("Learning rate = ", eta)
 			print("Lambda =        ", lmbd)
-			print("MSE score:      ", MSE(power_solution, y_pred))
-			print("R2 score:       ", r2_score(power_solution, y_pred))
+			print("MSE score:      ",  MSE(power_solution, y_pred))
+			print("RMSE score:      ", RMSE(power_solution, y_pred))
+			print("R2 score:       ",  r2_score(power_solution, y_pred))
 			print()
 
-	fig, ax = plt.subplots(figsize=(8.5, 4.5))
-    sns.heatmap(MSE, annot=True, xticklabels=lmbd_vals, yticklabels=eta_vals, ax=ax, linewidths=.3, linecolor="black")
-    ax.set_title("MSE scores (sklearn)")
-    ax.set_ylabel("$\\eta$")
-    ax.set_xlabel("$\\lambda$")
-    plt.show()
-
-
-    fig, ax = plt.subplots(figsize=(8.5, 4.5))
-    sns.heatmap(R2, annot=True, xticklabels=lmbd_vals, yticklabels=eta_vals, ax=ax, linewidths=.3, linecolor="black")
-    ax.set_title("Accuracy/R2 scores (sklearn)")
-    ax.set_ylabel("$\\eta$")
-    ax.set_xlabel("$\\lambda$")
-    plt.show()
-
-
 	#etas = ["{:0.2e}".format(i) for i in eta_vals]
-	#P.Heatmap_MSE_R2(MSE_, R2_, lmbd_vals, eta_vals, title="", figname='', savefig=False)
-	return MSE_, R2_
+
+	return MSE_, RMSE_, R2_
 
 def FFNN(features, target, pred_features, power_solution):
 	
 	lamb  = 1e-4
 	eta   = 1e-2
 
-	reg = MLPRegressor(	activation="relu", # Eller en annen?
-						solver="sgd",
+	reg = MLPRegressor(	activation="relu",         # Eller en annen?
+						solver="sgd",              # Eller en annen?
 						learning_rate='constant',
 						alpha=lamb,
 						learning_rate_init=eta,
@@ -242,9 +231,6 @@ def FFNN(features, target, pred_features, power_solution):
 	# Compare predicted and actual values
 	compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
 	print("\nComapre power_solution and y_pred:\n", compare_values)
-
-	print("MSE on test set: ", mean_squared_error(power_solution, y_pred))
-	print("R2 score on test set: ", np.sqrt(mean_squared_error(power_solution, y_pred)))
 
 	return y_pred, power_solution
 

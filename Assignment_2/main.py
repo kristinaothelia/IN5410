@@ -148,24 +148,34 @@ if __name__ == '__main__':
 
             print("Feed Forward Neural Network (FFNN)\n")
 
+            # Need to check if the best value is within the range, and run more values
             eta_vals   = np.logspace(-5, -1, 2)  # 5
             lmbd_vals  = np.logspace(-5, -1, 2)  # 5
 
-            MSE_range, R2_range = \
+            MSE_range, RMSE_range, R2_range = \
             ML.FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals)
 
-            #P.Heatmap_MSE_R2(MSE_range, R2_range, lmbd_vals, eta_vals, title="", figname='', savefig=False)
+            P.Heatmap_MSE_R2(MSE_range, RMSE_range, R2_range, lmbd_vals, eta_vals,\
+                            title='FFNN',\
+                            figname='Model_evaluation/FFNN',\
+                            savefigs=True)
 
+            # FFNN calculated with random hyperparameter, we must remember to use the best values
             y_pred, power_solution = ML.FFNN(features, target, pred_features, power_solution)
 
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-NN.csv')
 
             # Accuracy
-            P.Metrics(power_solution, y_pred, method="Feed Forward Neural Network (ANN)", filename="Model_evaluation/Task1_RMSE_FFNN.txt")
+            P.Metrics(power_solution, y_pred,\
+                     method="Feed Forward Neural Network (FFNN)",\
+                     filename="Model_evaluation/Task1_RMSE_FFNN.txt")
 
             if Plot == True:    # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Feed Forward Neural Network (FFNN)", figname="Plots/Task1_FFNN.png", savefig=True)
+                P.prediction_solution_plot(y_pred, power_solution, times,\
+                                          title="Feed Forward Neural Network (FFNN)",\
+                                          figname="Plots/Task1_FFNN.png",\
+                                          savefig=True)
 
         else:
             print("Pass an argument for ML method for Task 1 (-L, -K, -S, -A)")

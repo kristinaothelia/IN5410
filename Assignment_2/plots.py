@@ -85,23 +85,54 @@ def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename=""):
         w.write(str(x))
 
     
-def Heatmap_MSE_R2(MSE, R2, lmbd_vals, eta_vals, title="", figname='', savefig=False):
-    fig, ax = plt.subplots(figsize=(8.5, 4.5))
-    sns.heatmap(MSE, annot=True, xticklabels=lmbd_vals, yticklabels=eta_vals, ax=ax, linewidths=.3, linecolor="black")
-    ax.set_title("MSE scores (sklearn)")
-    ax.set_ylabel("$\\eta$")
-    ax.set_xlabel("$\\lambda$")
-    if savefig:
-        plt.savefig(figname)
-    else:
-        plt.show()
+def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', savefigs=False):
+    #seaborn.set(context='notebook', style='darkgrid', palette='deep', font='sans-serif', font_scale=1, color_codes=True, rc=None)
+    
+    # matplotlib 3.1.1 broke seaborn.... run: pip install matplotlib==3.1.2
+    
+    # Creating a heatmap of MSE values
+    fig, ax = plt.subplots()
+    sns.heatmap(MSE, annot=True, linewidths=.3, linecolor="black", ax=ax)
 
-    fig, ax = plt.subplots(figsize=(8.5, 4.5))
-    sns.heatmap(R2, annot=True, xticklabels=lmbd_vals, yticklabels=eta_vals, ax=ax, linewidths=.3, linecolor="black")
-    ax.set_title("Accuracy/R2 scores (sklearn)")
-    ax.set_ylabel("$\\eta$")
-    ax.set_xlabel("$\\lambda$")
-    if savefig:
-        plt.savefig(figname)
+    ax.set_xticklabels(lmbd_vals, minor=False, ha='center')
+    ax.set_yticklabels(eta_vals,  minor=False, va='center')
+
+    plt.title(title + ' (MSE)', fontsize=15)
+    plt.ylabel("$\\eta$",       fontsize=15)
+    plt.xlabel("$\\lambda$",    fontsize=15)
+
+    if savefigs:
+        plt.savefig(figname + '_MSE')
+
+
+    # Creating a heatmap of RMSE values
+    fig, ax = plt.subplots()
+    sns.heatmap(RMSE, annot=True, linewidths=.3, linecolor="black", ax=ax)
+
+    ax.set_xticklabels(lmbd_vals, minor=False, ha='center')
+    ax.set_yticklabels(eta_vals,  minor=False, va='center')
+
+    plt.title(title + ' (RMSE)', fontsize=15)
+    plt.ylabel("$\\eta$",        fontsize=15)
+    plt.xlabel("$\\lambda$",     fontsize=15)
+
+    if savefigs:
+        plt.savefig(figname + '_RMSE')
+
+
+    # Creating a heatmap of R2 values
+    fig, ax = plt.subplots()
+    sns.heatmap(R2, annot=True, linewidths=.3, linecolor="black", ax=ax)
+
+    ax.set_xticklabels(lmbd_vals, minor=False, ha='center')
+    ax.set_yticklabels(eta_vals,  minor=False, va='center')
+
+    plt.title(title + ' (R2)', fontsize=15)
+    plt.ylabel("$\\eta$",      fontsize=15)
+    plt.xlabel("$\\lambda$",   fontsize=15)
+    
+    if savefigs:
+        plt.savefig(figname + '_R2')
+
     else:
         plt.show()
