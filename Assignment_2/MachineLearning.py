@@ -166,23 +166,36 @@ def SVR_func(features, target, pred_features, power_solution, default=True):
 	return y_pred, power_solution, kernel, C, gamma, epsilon
 
 
-def FFNN_gridsearch(features, target, pred_features, power_solution):
+def FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=False):
 	""" Finding the best parameters using GridSearchCV """
-	pass
+
+	parameters  = {	'activation': ['relu', 'logistic'], \
+					'solver': ['sgd', 'adam'],			\
+					'alpha': lmbd_vals,					\
+					'learning_rate': ['constant', 'adaptive'], \
+					'learning_rate_init': eta_vals,		\
+					'max_iter': [500, 1000, 1500]}
+
+	ffnn 		= MLPRegressor(shuffle=shuffle)
+	grid_search = GridSearchCV(ffnn, parameters, n_jobs=-1)
+	grid_search.fit(features, target.ravel())
+
+	best_params = grid_search.best_params_
+	print("\nBest parameters: ", best_params)
+
+	return best_params
 
 
-def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals):
+def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals, shuffle=False):
 	"""
-	Creating MSE, RMSE and R2 values for a heatmap illustrating the best value 
+	Creating MSE, RMSE and R2 values for a heatmap illustrating the best value
 	Just used what we did in fys-stk first, maybe we can use gridsearch instead
 	"""
-
 	epochs      = 500 #1000
 
 	MSE_         = np.zeros((len(eta_vals), len(lmbd_vals)))
 	RMSE_        = np.zeros((len(eta_vals), len(lmbd_vals)))
 	R2_          = np.zeros((len(eta_vals), len(lmbd_vals)))
-
 
 	for i, eta in enumerate(eta_vals):
 		for j, lmbd in enumerate(lmbd_vals):
@@ -192,52 +205,66 @@ def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_val
 								alpha=lmbd,
 			    				learning_rate_init=eta,
 			    				max_iter=epochs,
-			    				tol=1e-5 )
+			    				tol=1e-5,
+								shuffle=shuffle )
 
 			reg.fit(features, target)
-			y_pred    = reg.predict(pred_features)  
+			y_pred    = reg.predict(pred_features)
 
 			MSE_[i][j]  = MSE(power_solution, y_pred)
 			RMSE_[i][j] = RMSE(power_solution, y_pred)
 			R2_[i][j]   = r2_score(power_solution, y_pred)
 
 			# This can probably be taken away later, or insert in a 'if print=True'?
+
 			print("Learning rate = ", eta)
 			print("Lambda =        ", lmbd)
-			print("MSE score:      ",  MSE(power_solution, y_pred))
-			print("RMSE score:      ", RMSE(power_solution, y_pred))
-			print("R2 score:       ",  r2_score(power_solution, y_pred))
+			print("MSE score:      ", MSE(power_solution, y_pred))
+			print("RMSE score:     ", RMSE(power_solution, y_pred))
+			print("R2 score:       ", r2_score(power_solution, y_pred))
 			print()
 
-	#etas = ["{:0.2e}".format(i) for i in eta_vals]
 
+	#etas = ["{:0.2e}".format(i) for i in eta_vals]
 	return MSE_, RMSE_, R2_
 
-def FFNN(features, target, pred_features, power_solution):
+def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=False, shuffle=True):
 	"""
 	Feed Forward Neural Network
 	"""
-	
-	# Need to update these to the best values
-	lamb  = 1e-4
-	eta   = 1e-2
+	if default:
 
-	reg = MLPRegressor(	activation="relu",         # Eller en annen?
-						solver="sgd",              # Eller en annen?
-						learning_rate='constant',
-						alpha=lamb,
-						learning_rate_init=eta,
-						max_iter=1000,
-						tol=1e-5 )
+		activation    		= "relu"
+		solver		  		= "adam" 		# sdg
+		learning_rate 		= "adaptive"	# constant
+		alpha 		  		= 0.001
+		learning_rate_init  = 1e-5
+
+		#FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals, shuffle=False)
+		#P.Heatmap_MSE_R2(MSE_range, RMSE_range, R2_range, lmbd_vals, eta_vals,\
+		#				title='FFNN', figname='Model_evaluation/FFNN', savefigs=True)
+
+		reg = MLPRegressor(	activation=activation, solver=solver,
+							learning_rate=learning_rate,
+							alpha=alpha, learning_rate_init=learning_rate_init,
+							max_iter=1000, tol=1e-5, shuffle=shuffle )
+	else:
+		best_params   = FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=shuffle)
+		reg 		  = MLPRegressor().set_params(**best_params)
+		activation    = best_params['activation']
+		solver		  = best_params['solver']
+		alpha         = best_params['alpha']
+		learning_rate = best_params['learning_rate_init']
+
 
 	reg    = reg.fit(features, target)        # Training the model
 	y_pred = reg.predict(pred_features)       # Predicting
 
 	# Compare predicted and actual values
-	compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
-	print("\nComapre power_solution and y_pred:\n", compare_values)
+	#compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
+	#print("\nComapre power_solution and y_pred:\n", compare_values)
 
-	return y_pred, power_solution
+	return y_pred, power_solution, activation, solver, alpha, learning_rate
 
 
 def RNN_gridsearch(features, target, pred_features, power_solution):

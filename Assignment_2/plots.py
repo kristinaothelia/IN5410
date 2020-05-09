@@ -31,7 +31,7 @@ def prediction_solution_plot(y_pred, power_solution, date, title="", figname='',
     plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
 
     if savefig:
-        plt.savefig(figname)
+        plt.savefig(figname);  print("--> Figure saved")
     else:
         plt.show()
 
@@ -53,7 +53,7 @@ def prediction_solution_plot_T2(y_pred, y_pred_mlr, power_solution, date, title=
     plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
 
     if savefig:
-        plt.savefig(figname)
+        plt.savefig(figname); print("--> Figure saved")
     else:
         plt.show()
 
@@ -84,12 +84,12 @@ def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename=""):
     with open(filename, 'w') as w:
         w.write(str(x))
 
-    
+
 def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', savefigs=False):
     #seaborn.set(context='notebook', style='darkgrid', palette='deep', font='sans-serif', font_scale=1, color_codes=True, rc=None)
-    
+
     # matplotlib 3.1.1 broke seaborn.... run: pip install matplotlib==3.1.2
-    
+
     # Creating a heatmap of MSE values
     fig, ax = plt.subplots()
     sns.heatmap(MSE, annot=True, linewidths=.3, linecolor="black", ax=ax)
@@ -130,9 +130,9 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
     plt.title(title + ' (R2)', fontsize=15)
     plt.ylabel("$\\eta$",      fontsize=15)
     plt.xlabel("$\\lambda$",   fontsize=15)
-    
+
     if savefigs:
         plt.savefig(figname + '_R2')
 
-    else:
-        plt.show()
+    #else:
+    plt.show()

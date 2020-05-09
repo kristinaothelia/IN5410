@@ -24,21 +24,6 @@ WF_input  = Data.Get_data(filename='/Data/WeatherForecastInput.csv')
 timestamps = F_temp.index #Solution.index. Endra til F_temp for vi bruker ikke denne til noe..? Den inneholder bare timestamps
 times = pd.to_datetime(timestamps)
 
-'''
-#Fra noen andre, men kult!
-data = TrainData
-weather_forecast = WF_input
-
-data['windspeed']  = data['WS10']
-data['zonal']      = data['U10']
-data['meridional'] = data['V10']
-weather_forecast['windspeed']  = weather_forecast['WS10']
-weather_forecast['zonal']      = weather_forecast['U10']
-weather_forecast['meridional'] = weather_forecast['V10']
-cmap = sns.cubehelix_palette(start=1, light=1, as_cmap=True)
-ax=sns.kdeplot(data['zonal'], data['meridional'], cmap=cmap, shade=True, cut=5)
-ax=sns.kdeplot(weather_forecast['zonal'], weather_forecast['meridional'], cmap='Reds', shade=False, cut=5,shade_lowest=False)
-'''
 
 if __name__ == '__main__':
 
@@ -49,13 +34,13 @@ if __name__ == '__main__':
     group.add_argument('-2', '--Task2', action="store_true", help="Task 2")
     group.add_argument('-3', '--Task3', action="store_true", help="Task 3")
 
-    # Optional argument for methods (Task 1) and plotting
-    parser.add_argument('-X', '--Plot',  action='store_true', help="Plotting", required=False)
+    # Optional argument for Task 1 ML methods
     parser.add_argument('-L', '--LR',    action='store_true', help="LR", required=False)
     parser.add_argument('-K', '--KNN',   action='store_true', help="kNN", required=False)
     parser.add_argument('-S', '--SVR',   action='store_true', help="SVR", required=False)
     parser.add_argument('-F', '--FFNN',  action='store_true', help="FFNN", required=False)
-
+    # Optional argument for plotting
+    parser.add_argument('-X', '--Plot',  action='store_true', help="Plotting", required=False)
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
 
@@ -103,13 +88,17 @@ if __name__ == '__main__':
             y_pred, power_solution = ML.linreg(features, target, pred_features, power_solution)
 
             # Save predicted results in .cvs files
-            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-LR.csv')
+            Data.Make_csv_dataset(prediction=y_pred, time=times, \
+                                  name='Predictions/ForecastTemplate1-LR.csv')
 
             # Accuracy, R**2
-            P.Metrics(power_solution, y_pred, method="Linear Regression (LR)", filename="Model_evaluation/Task1_RMSE_LR.txt")
+            P.Metrics(power_solution, y_pred, method="Linear Regression (LR)", \
+                      filename="Model_evaluation/Task1_RMSE_LR.txt")
 
             if Plot == True:     # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Linear Regression", figname="Plots/Task1_LR.png", savefig=True)
+                P.prediction_solution_plot(y_pred, power_solution, times, \
+                                           title="Linear Regression", \
+                                           figname="Results/Task1_LR.png", savefig=True)
 
 
         elif KNN == True:
@@ -120,13 +109,17 @@ if __name__ == '__main__':
             y_pred, power_solution, k, weights, p = UI.Task1_kNN_input(features, target, pred_features, power_solution)
 
             # Save predicted results in .cvs files
-            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-kNN.csv')
+            Data.Make_csv_dataset(prediction=y_pred, time=times, \
+                                  name='Predictions/ForecastTemplate1-kNN.csv')
 
             # Accuracy metrics
-            P.Metrics(power_solution, y_pred, param="k=%g, p=%g, weight=%s" %(k, p, weights), method="k-Nearest Neighbors (kNN)", filename="Model_evaluation/Task1_RMSE_kNN.txt")
+            P.Metrics(power_solution, y_pred, param="k=%g, p=%g, weight=%s" %(k, p, weights), \
+                      method="k-Nearest Neighbors (kNN)", filename="Model_evaluation/Task1_RMSE_kNN.txt")
 
             if Plot == True:    # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="k-Nearest Neighbors (kNN). k=%g"%k, figname="Plots/Task1_kNN.png", savefig=True)
+                P.prediction_solution_plot(y_pred, power_solution, times, \
+                                           title="k-Nearest Neighbors (kNN). k=%g"%k, \
+                                           figname="Results/Task1_kNN.png", savefig=True)
 
         elif SVR == True:
 
@@ -136,51 +129,59 @@ if __name__ == '__main__':
             y_pred, power_solution, kernel, C, gamma, epsilon = UI.Task1_SVR_input(features, target, pred_features, power_solution)
 
             # Save predicted results in .cvs files
-            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-SVR.csv')
+            Data.Make_csv_dataset(prediction=y_pred, time=times, \
+                                  name='Predictions/ForecastTemplate1-SVR.csv')
 
             # Accuracy metrics
-            P.Metrics(power_solution, y_pred, param="kernel=%s, C=%g, gamma=%s, eps=%g" %(kernel, C, gamma, epsilon), method="Support Vector Regression (SVR)", filename="Model_evaluation/Task1_RMSE_SVR.txt")
+            P.Metrics(power_solution, y_pred, param="kernel=%s, C=%g, gamma=%s, eps=%g" %(kernel, C, gamma, epsilon), \
+                      method="Support Vector Regression (SVR)", filename="Model_evaluation/Task1_RMSE_SVR.txt")
 
             if Plot == True:    # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times, title="Support Vector Regression (SVR)", figname="Plots/Task1_SVR.png", savefig=True)
+                P.prediction_solution_plot(y_pred, power_solution, times, \
+                                           title="Support Vector Regression (SVR)", \
+                                           figname="Results/Task1_SVR.png", savefig=True)
 
         elif FFNN == True:
 
             print("Feed Forward Neural Network (FFNN)\n")
 
             # Need to check if the best value is within the range, if not, adjust range
-            eta_vals   = np.logspace(-5, -1, 5)
-            lmbd_vals  = np.logspace(-5, -1, 5)
+            #eta_vals   = [0.00001, 0.0001, 0.001, 0.01, 0.1]
+            #lmbd_vals  = [0.00001, 0.0001, 0.001, 0.01, 0.1]
+            eta_vals   = [0.0001, 0.001, 0.01, 0.1]
+            lmbd_vals  = [0.0001, 0.001, 0.01, 0.1]
 
-            # Calculating MSEs, RMSEs and R2s that to use in Heatmap_MSE_R2
-            MSE_range, RMSE_range, R2_range = \
-            ML.FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals)
+            # Legge inn en if eller noe her
+            def Heatmap():
+                # Calculating MSEs, RMSEs and R2s that to use in Heatmap_MSE_R2
+                MSE_range, RMSE_range, R2_range \
+                = ML.FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals, shuffle=False)
 
-            # Creating heatmaps of MSE, RMSE and R2 to choose the best value
-            P.Heatmap_MSE_R2(MSE_range, RMSE_range, R2_range, lmbd_vals, eta_vals,\
-                            title='FFNN',\
-                            figname='Model_evaluation/FFNN',\
-                            savefigs=True)
+                # Creating heatmaps of MSE, RMSE and R2 to choose the best value
+                P.Heatmap_MSE_R2(MSE_range, RMSE_range, R2_range, lmbd_vals, eta_vals,\
+                                title='FFNN', figname='Model_evaluation/FFNN', savefigs=True)
+            #Heatmap()
 
             # FFNN calculated with random hyperparameter, we must remember to use the best values
-            y_pred, power_solution = ML.FFNN(features, target, pred_features, power_solution)
+            y_pred, power_solution, activation, solver, alpha, learning_rate \
+            = ML.FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=True, shuffle=False)
 
             #Save predicted results in .cvs files
-            Data.Make_csv_dataset(prediction=y_pred, time=times, name='Predictions/ForecastTemplate1-NN.csv')
+            Data.Make_csv_dataset(prediction=y_pred, time=times, \
+                                  name='Predictions/ForecastTemplate1-NN.csv')
 
             # Accuracy
-            P.Metrics(power_solution, y_pred,\
+            P.Metrics(power_solution, y_pred, param="activation=%s, solver=%s, lambda=%g, eta=%g" %(activation, solver, alpha, learning_rate), \
                      method="Feed Forward Neural Network (FFNN)",\
                      filename="Model_evaluation/Task1_RMSE_FFNN.txt")
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times,\
                                           title="Feed Forward Neural Network (FFNN)",\
-                                          figname="Plots/Task1_FFNN.png",\
-                                          savefig=True)
+                                          figname="Results/Task1_FFNN.png", savefig=True)
 
         else:
-            print("Pass an argument for ML method for Task 1 (-L, -K, -S, -A)")
+            print("Pass an argument for ML method for Task 1 (-L, -K, -S, -F)")
 
 
     elif Task2 == True:
@@ -210,13 +211,17 @@ if __name__ == '__main__':
         y_pred_mlr, power_solution = ML.linreg(features_mlr, target_mlr, pred_features_mlr, power_solution_mlr)
 
         # Save predicted results in .cvs files
-        Data.Make_csv_dataset(prediction=y_pred_mlr, time=times, name='Predictions/ForecastTemplate2.csv')
+        Data.Make_csv_dataset(prediction=y_pred_mlr, time=times, \
+                              name='Predictions/ForecastTemplate2.csv')
 
         # Accuracy
-        P.Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="Model_evaluation/Task2_RMSE.txt")
+        P.Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, \
+                          filename="Model_evaluation/Task2_RMSE.txt")
 
         if Plot == True:    # Graphical illustration
-            P.prediction_solution_plot_T2(y_pred_lr, y_pred_mlr, power_solution, times, title="LR and MLR", figname="Plots/Task2.png", savefig=True)
+            P.prediction_solution_plot_T2(y_pred_lr, y_pred_mlr, power_solution, times, \
+                                          title="LR and MLR", \
+                                          figname="Results/Task2.png", savefig=True)
 
 
     elif Task3 == True:
@@ -245,5 +250,5 @@ if __name__ == '__main__':
         P.Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="Model_evaluation/Task3_RMSE.txt")
 
         if Plot == True:    # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, times, title="???", figname="Plots/Task3.png", savefig=True)
+            P.prediction_solution_plot(y_pred, power_solution, times, title="???", figname="Results/Task3.png", savefig=True)
         """
