@@ -163,7 +163,7 @@ if __name__ == '__main__':
             #Heatmap()
 
             # FFNN calculated with random hyperparameter, we must remember to use the best values
-            y_pred, power_solution, activation, solver, alpha, learning_rate \
+            y_pred, power_solution, activation, solver, alpha, learning_rate_init \
             = ML.FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=True, shuffle=False)
 
             #Save predicted results in .cvs files
@@ -171,9 +171,9 @@ if __name__ == '__main__':
                                   name='Predictions/ForecastTemplate1-NN.csv')
 
             # Accuracy
-            P.Metrics(power_solution, y_pred, param="activation=%s, solver=%s, lambda=%g, eta=%g" %(activation, solver, alpha, learning_rate), \
+            P.Metrics(power_solution, y_pred, param="activation=%s, solver=%s, lambda=%f, eta=%f" %(activation, solver, alpha, learning_rate_init), \
                      method="Feed Forward Neural Network (FFNN)",\
-                     filename="Model_evaluation/Task1_RMSE_FFNN.txt")
+                     filename="Model_evaluation/Task1_RMSE_FFNN.txt") # Prov %g istedenfor %f..?
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times,\

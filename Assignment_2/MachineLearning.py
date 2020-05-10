@@ -29,7 +29,7 @@ from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
 # For implementing RNN
-from keras.models import Sequential 
+from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Dropout
@@ -255,12 +255,12 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 							alpha=alpha, learning_rate_init=learning_rate_init,
 							max_iter=1000, tol=1e-5, shuffle=shuffle )
 	else:
-		best_params   = FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=shuffle)
-		reg 		  = MLPRegressor().set_params(**best_params)
-		activation    = best_params['activation']
-		solver		  = best_params['solver']
-		alpha         = best_params['alpha']
-		learning_rate = best_params['learning_rate_init']
+		best_params   		= FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=shuffle)
+		reg 		  		= MLPRegressor().set_params(**best_params)
+		activation    		= best_params['activation']
+		solver		  		= best_params['solver']
+		alpha         		= best_params['alpha']
+		learning_rate_init 	= best_params['learning_rate_init']
 
 
 	reg    = reg.fit(features, target)        # Training the model
@@ -270,7 +270,7 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 	#compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
 	#print("\nComapre power_solution and y_pred:\n", compare_values)
 
-	return y_pred, power_solution, activation, solver, alpha, learning_rate
+	return y_pred, power_solution, activation, solver, alpha, learning_rate_init
 
 
 def RNN_gridsearch(features, target, pred_features, power_solution):
