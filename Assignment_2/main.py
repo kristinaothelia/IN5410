@@ -30,21 +30,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="ML for Wind Energy Forecasting")
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-1', '--Task1', action="store_true", help="Task 1")
-    group.add_argument('-2', '--Task2', action="store_true", help="Task 2")
-    group.add_argument('-3', '--Task3', action="store_true", help="Task 3")
+    group.add_argument('-1', '--Task1', action="store_true", help="Task 1: Power forecasting using wind speed")
+    group.add_argument('-2', '--Task2', action="store_true", help="Task 2: Power forecasting using wind speed & direction")
+    group.add_argument('-3', '--Task3', action="store_true", help="Task 3: Power forecasting without weather data")
 
     # Optional argument for Task 1 ML methods
-    parser.add_argument('-L', '--LR',    action='store_true', help="LR", required=False)
-    parser.add_argument('-K', '--KNN',   action='store_true', help="kNN", required=False)
-    parser.add_argument('-S', '--SVR',   action='store_true', help="SVR", required=False)
-    parser.add_argument('-F', '--FFNN',  action='store_true', help="FFNN", required=False)
+    parser.add_argument('-L', '--LR',    action='store_true', help="Linear Regression (OLS)", required=False)
+    parser.add_argument('-K', '--KNN',   action='store_true', help="K-nearest neighbor", required=False)
+    parser.add_argument('-S', '--SVR',   action='store_true', help="Support Vector Machine", required=False)
+    parser.add_argument('-F', '--FFNN',  action='store_true', help="Feed Forward Neural Network", required=False)
     # Optional argument for plotting
     parser.add_argument('-X', '--Plot',  action='store_true', help="Plotting", required=False)
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
 
-    if len(sys.argv) <= 1:
+    if len(sys.argv) <= 2:
         sys.argv.append('--help')
 
     args  = parser.parse_args()
