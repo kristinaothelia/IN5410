@@ -28,6 +28,12 @@ from sklearn.metrics       	  	import mean_squared_error, r2_score
 from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
+# For implementing RNN
+from keras.models import Sequential 
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
+
 # -----------------------------------------------------------------------------
 
 
@@ -272,6 +278,7 @@ def RNN_gridsearch(features, target, pred_features, power_solution):
 	pass
 
 def RNN(features, target, pred_features, power_solution):
+
     pass
 
 # -----------------------------------------------------------------------------

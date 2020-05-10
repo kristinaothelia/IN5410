@@ -180,6 +180,10 @@ if __name__ == '__main__':
                                           title="Feed Forward Neural Network (FFNN)",\
                                           figname="Results/Task1_FFNN.png", savefig=True)
 
+        elif RNN == True:
+
+            print("Recurrent Neural Network (RNN)\n")
+
         else:
             print("Pass an argument for ML method for Task 1 (-L, -K, -S, -F)")
 
