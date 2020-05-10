@@ -278,7 +278,29 @@ def RNN_gridsearch(features, target, pred_features, power_solution):
 	pass
 
 def RNN(features, target, pred_features, power_solution):
+	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
+	
+	# Initilizing the RNN
+	reg = Sequential()
 
+	# Adding the first LSTM layer and some Dropout regularization
+	reg.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1],1)))
+    reg.add(Dropout(0.2))
+
+    # Adding a second LSTM layer and some Dropout regularization
+    reg.add(LSTM(units=50, return_sequences = True))
+    reg.add(Dropout(0.2))
+
+    # Adding a third LSTM layer and some Dropout regularization
+    reg.add(LSTM(units=50, return_sequences = True))
+    reg.add(Dropout(0.2))
+
+    # Adding a fourth LSTM layer and some Dropout regularization
+    reg.add(LSTM(units=50))
+    reg.add(Dropout(0.2))
+
+    # Adding the output layer
+    reg.add(Dense(units=1))
     pass
 
 # -----------------------------------------------------------------------------
