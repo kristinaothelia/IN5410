@@ -24,6 +24,7 @@ WF_input  = Data.Get_data(filename='/Data/WeatherForecastInput.csv')
 timestamps = F_temp.index #Solution.index. Endra til F_temp for vi bruker ikke denne til noe..? Den inneholder bare timestamps
 times = pd.to_datetime(timestamps)
 
+print("test")
 
 if __name__ == '__main__':
 
