@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
             # FFNN calculated with random hyperparameter, we must remember to use the best values
             y_pred, power_solution, activation, solver, alpha, learning_rate_init \
-            = ML.FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=True, shuffle=False)
+            = ML.FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=False, shuffle=False)
 
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, \

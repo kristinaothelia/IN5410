@@ -13,7 +13,7 @@ y_train						| target
 y_test						| power_solution
 """
 
-import sys
+import os, sys
 
 import matplotlib.pyplot 		as plt
 import pandas 					as pd
@@ -29,10 +29,12 @@ from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
 # For implementing RNN
+stderr = sys.stderr
+sys.stderr = open(os.devnull, 'w')
+#import keras
 from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.layers import Dropout
+from keras.layers import Dense, LSTM, Dropout
+sys.stderr = stderr
 
 # -----------------------------------------------------------------------------
 
@@ -237,6 +239,7 @@ def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_val
 def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=False, shuffle=True):
 	"""
 	Feed Forward Neural Network
+	# Best parameters:  {'activation': 'relu', 'alpha': 0.001, 'learning_rate': 'adaptive', 'learning_rate_init': 0.1, 'max_iter': 1500, 'solver': 'sgd'}
 	"""
 	if default:
 
@@ -279,29 +282,31 @@ def RNN_gridsearch(features, target, pred_features, power_solution):
 
 def RNN(features, target, pred_features, power_solution):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
+	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
+	# Installing keras: https://anaconda.org/conda-forge/keras
 	
 	# Initilizing the RNN
 	reg = Sequential()
 
 	# Adding the first LSTM layer and some Dropout regularization
 	reg.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1],1)))
-    reg.add(Dropout(0.2))
+	reg.add(Dropout(0.2))
 
-    # Adding a second LSTM layer and some Dropout regularization
-    reg.add(LSTM(units=50, return_sequences = True))
-    reg.add(Dropout(0.2))
+	# Adding a second LSTM layer and some Dropout regularization
+	reg.add(LSTM(units=50, return_sequences = True))
+	reg.add(Dropout(0.2))
 
-    # Adding a third LSTM layer and some Dropout regularization
-    reg.add(LSTM(units=50, return_sequences = True))
-    reg.add(Dropout(0.2))
+	# Adding a third LSTM layer and some Dropout regularization
+	reg.add(LSTM(units=50, return_sequences = True))
+	reg.add(Dropout(0.2))
 
-    # Adding a fourth LSTM layer and some Dropout regularization
-    reg.add(LSTM(units=50))
-    reg.add(Dropout(0.2))
+	# Adding a fourth LSTM layer and some Dropout regularization
+	reg.add(LSTM(units=50))
+	reg.add(Dropout(0.2))
 
-    # Adding the output layer
-    reg.add(Dense(units=1))
-    pass
+	# Adding the output layer
+	reg.add(Dense(units=1))
+	pass
 
 # -----------------------------------------------------------------------------
 
