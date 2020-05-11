@@ -235,10 +235,10 @@ if __name__ == '__main__':
         wind speed data, at the windfarm location. In this task, we'll make
         wind power production forecasting with only windpower generation data.
 
-        In the new training data file, we only have TIMESTAMP and POWER,
+        In the new training data file, we only TAMP and POWER,
         which is called time-seriesdata.
         Apply LR, SVR, ANN, and recurrent neural network (RNN) techniques to
-        predict wind power generation, for 11.2013.
+        predict wind power genhave TIMESeration, for 11.2013.
         We then evaluate the prediction accuracy, by MSE, RMSE and R2, with
         the true wind power measurements (in the file Solution.csv).
         """
@@ -251,12 +251,39 @@ if __name__ == '__main__':
         #print(pred_features, '\n')
         #print(power_solution)
 
-        print(target.shape)
-        print(pred_features.shape)
+        #print(target.shape)
+        #print(pred_features.shape)
 
         if RNN == True:
             print("Recurrent Neural Network (RNN)\n")
-            #ML.RNN(features, target, pred_features, power_solution)
+
+            look_back = 1
+            
+            trainX, trainY = ML.create_dataset(target, look_back)
+            testX, testY   = ML.create_dataset(power_solution, look_back)
+
+            # reshape input to be [samples, time steps, features]
+            trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+            testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+
+            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX)
+
+            print(test_pred.shape)
+            print(testY.shape)
+
+            # invert predictions
+            #trainPredict = scaler.inverse_transform(trainPredict)
+            #trainY = scaler.inverse_transform([trainY])
+            #testPredict = scaler.inverse_transform(testPredict)
+            #testY = scaler.inverse_transform([testY])
+            
+            rmse = ML.RMSE(testY, test_pred)
+            print(rmse)
+
+            if Plot == True:    # Graphical illustration
+                P.prediction_solution_plot_T3(test_pred, testY, title="", figname='', savefig=False)
+
+            #P.Metrics(testY[0], test_pred[:,0], param="", method="RNN", filename="Model_evaluation/Task3_RNN.txt")
 
             """
             #ForecastTemplate3-LR.csv, ForecastTemplate3-SVR.csv, ForecastTemplate3-ANN.csv, ForecastTemplate3-RNN.csv

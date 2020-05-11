@@ -57,6 +57,24 @@ def prediction_solution_plot_T2(y_pred, y_pred_mlr, power_solution, date, title=
     else:
         plt.show()
 
+def prediction_solution_plot_T3(y_pred, power_solution, title="", figname='', savefig=False):
+    """
+    Function thats plots the predicted power vs. the actual generated power
+    """
+    fig, ax = plt.subplots(figsize=(8.5, 4.5))
+    ax.plot(power_solution, 'g-', linewidth=0.9, label="Real")
+    ax.plot(y_pred, 'b-', linewidth=0.9, label="Predicted")
+
+    plt.title(title, fontsize=15)
+    plt.xlabel("Time", fontsize=15)
+    plt.ylabel("Wind power [normalized]", fontsize=15)
+    plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
+
+    if savefig:
+        plt.savefig(figname);  print("--> Figure saved")
+    else:
+        plt.show()
+
 def Metrics(power_solution, y_pred, param="", method="", filename=""):
 
     x = PrettyTable()

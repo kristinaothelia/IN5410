@@ -283,12 +283,32 @@ def RNN_gridsearch(features, target, pred_features, power_solution):
 	""" Finding the best parameters using GridSearchCV """
 	pass
 
-def RNN(features, target, pred_features, power_solution):
+def RNN(look_back, trainX, trainY, testX):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
 	
+	epo = 10
+	# create and fit the LSTM network
+	model = Sequential()
+	model.add(LSTM(4, input_shape=(1, look_back)))
+	model.add(Dense(1))
+	model.compile(loss='mean_squared_error', optimizer='adam')
+	model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
+
+	# make predictions
+	trainPredict = model.predict(trainX)
+	testPredict  = model.predict(testX)
+
 	
+	# calculate root mean squared error
+	#trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
+	#print('Train Score: %.2f RMSE' % (trainScore))
+	#testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
+	#print('Test Score: %.2f RMSE' % (testScore))
+
+	'''
+	# Annet eksempel:
 	# Initilizing the RNN
 	reg = Sequential()
 
@@ -310,8 +330,19 @@ def RNN(features, target, pred_features, power_solution):
 
 	# Adding the output layer
 	reg.add(Dense(units=1))
+	'''
+	return trainPredict, testPredict
 
-	pass
+
+
+# convert an array of values into a dataset matrix
+def create_dataset(dataset, look_back=1):
+	dataX, dataY = [], []
+	for i in range(len(dataset)-look_back-1):
+		a = dataset[i:(i+look_back), 0]
+		dataX.append(a)
+		dataY.append(dataset[i + look_back, 0])
+	return np.array(dataX), np.array(dataY)
 
 # -----------------------------------------------------------------------------
 
