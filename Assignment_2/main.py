@@ -24,7 +24,6 @@ WF_input  = Data.Get_data(filename='/Data/WeatherForecastInput.csv')
 timestamps = F_temp.index #Solution.index. Endra til F_temp for vi bruker ikke denne til noe..? Den inneholder bare timestamps
 times = pd.to_datetime(timestamps)
 
-print("test")
 
 if __name__ == '__main__':
 
@@ -40,12 +39,13 @@ if __name__ == '__main__':
     parser.add_argument('-K', '--KNN',   action='store_true', help="K-nearest neighbor", required=False)
     parser.add_argument('-S', '--SVR',   action='store_true', help="Support Vector Machine", required=False)
     parser.add_argument('-F', '--FFNN',  action='store_true', help="Feed Forward Neural Network", required=False)
+    parser.add_argument('-R', '--RNN',  action='store_true',  help="Recurrent Neural Network", required=False)
     # Optional argument for plotting
     parser.add_argument('-X', '--Plot',  action='store_true', help="Plotting", required=False)
     # Optional argument for printing out possible warnings
     parser.add_argument('-W', '--Warnings', action='store_true', help="Warnings", required=False)
 
-    if len(sys.argv) <= 2:
+    if len(sys.argv) <= 1:
         sys.argv.append('--help')
 
     args  = parser.parse_args()
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     KNN       = args.KNN
     SVR       = args.SVR
     FFNN      = args.FFNN
+    RNN       = args.RNN
     Warnings  = args.Warnings
 
     if not Warnings:
@@ -165,7 +166,7 @@ if __name__ == '__main__':
 
             # FFNN calculated with random hyperparameter, we must remember to use the best values
             y_pred, power_solution, activation, solver, alpha, learning_rate_init \
-            = ML.FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=False, shuffle=False)
+            = ML.FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=True, shuffle=False)
 
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=times, \
@@ -181,9 +182,6 @@ if __name__ == '__main__':
                                           title="Feed Forward Neural Network (FFNN)",\
                                           figname="Results/Task1_FFNN.png", savefig=True)
 
-        elif RNN == True:
-
-            print("Recurrent Neural Network (RNN)\n")
 
         else:
             print("Pass an argument for ML method for Task 1 (-L, -K, -S, -F)")
@@ -248,12 +246,24 @@ if __name__ == '__main__':
         # Remove U10, V10, WS10, U100, V100, WS100 from TrainData.csv
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
 
-        """
-        #ForecastTemplate3-LR.csv, ForecastTemplate3-SVR.csv, ForecastTemplate3-ANN.csv, ForecastTemplate3-RNN.csv
+        #print(features, '\n')
+        #print(target, '\n')
+        #print(pred_features, '\n')
+        #print(power_solution)
 
-        # Accuracy
-        P.Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="Model_evaluation/Task3_RMSE.txt")
+        print(target.shape)
+        print(pred_features.shape)
 
-        if Plot == True:    # Graphical illustration
-            P.prediction_solution_plot(y_pred, power_solution, times, title="???", figname="Results/Task3.png", savefig=True)
-        """
+        if RNN == True:
+            print("Recurrent Neural Network (RNN)\n")
+            #ML.RNN(features, target, pred_features, power_solution)
+
+            """
+            #ForecastTemplate3-LR.csv, ForecastTemplate3-SVR.csv, ForecastTemplate3-ANN.csv, ForecastTemplate3-RNN.csv
+
+            # Accuracy
+            P.Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="Model_evaluation/Task3_RMSE.txt")
+
+            if Plot == True:    # Graphical illustration
+                P.prediction_solution_plot(y_pred, power_solution, times, title="???", figname="Results/Task3.png", savefig=True)
+            """

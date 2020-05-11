@@ -28,6 +28,7 @@ from sklearn.metrics       	  	import mean_squared_error, r2_score
 from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
+
 # For implementing RNN
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
@@ -35,6 +36,7 @@ sys.stderr = open(os.devnull, 'w')
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 sys.stderr = stderr
+
 
 # -----------------------------------------------------------------------------
 
@@ -240,6 +242,7 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 	"""
 	Feed Forward Neural Network
 	# Best parameters:  {'activation': 'relu', 'alpha': 0.001, 'learning_rate': 'adaptive', 'learning_rate_init': 0.1, 'max_iter': 1500, 'solver': 'sgd'}
+	# Best parameters:  {'activation': 'relu', 'alpha': 0.0001, 'learning_rate': 'adaptive', 'learning_rate_init': 0.1, 'max_iter': 500, 'solver': 'sgd'}
 	"""
 	if default:
 
@@ -285,6 +288,7 @@ def RNN(features, target, pred_features, power_solution):
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
 	
+	
 	# Initilizing the RNN
 	reg = Sequential()
 
@@ -306,6 +310,7 @@ def RNN(features, target, pred_features, power_solution):
 
 	# Adding the output layer
 	reg.add(Dense(units=1))
+
 	pass
 
 # -----------------------------------------------------------------------------
