@@ -272,7 +272,7 @@ if __name__ == '__main__':
             # shift test predictions
             testPredict_       = np.empty_like(power_solution)
             #testPredict_[:, :] = np.nan
-            testPredict_[len(trainX)+(look_back*2)+1:len(power_solution)-1] = testPredict
+            testPredict_[len(trainX)+(look_back*2)+1:len(power_solution)-1] = testPredict # does not work......
 
             y_pred = testPredict_
 
