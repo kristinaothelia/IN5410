@@ -252,10 +252,6 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 		alpha 		  		= 0.001
 		learning_rate_init  = 1e-5
 
-		#FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals, shuffle=False)
-		#P.Heatmap_MSE_R2(MSE_range, RMSE_range, R2_range, lmbd_vals, eta_vals,\
-		#				title='FFNN', figname='Model_evaluation/FFNN', savefigs=True)
-
 		reg = MLPRegressor(	activation=activation, solver=solver,
 							learning_rate=learning_rate,
 							alpha=alpha, learning_rate_init=learning_rate_init,
@@ -287,7 +283,7 @@ def RNN(look_back, trainX, trainY, testX):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
-	
+
 	epo = 10
 	# create and fit the LSTM network
 	model = Sequential()
@@ -300,7 +296,7 @@ def RNN(look_back, trainX, trainY, testX):
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 
-	
+
 	# calculate root mean squared error
 	#trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
 	#print('Train Score: %.2f RMSE' % (trainScore))
@@ -333,16 +329,6 @@ def RNN(look_back, trainX, trainY, testX):
 	'''
 	return trainPredict, testPredict
 
-
-
-# convert an array of values into a dataset matrix
-def create_dataset(dataset, look_back=1):
-	dataX, dataY = [], []
-	for i in range(len(dataset)-look_back-1):
-		a = dataset[i:(i+look_back), 0]
-		dataX.append(a)
-		dataY.append(dataset[i + look_back, 0])
-	return np.array(dataX), np.array(dataY)
 
 # -----------------------------------------------------------------------------
 
