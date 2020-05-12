@@ -242,15 +242,11 @@ if __name__ == '__main__':
 
         # Remove U10, V10, WS10, U100, V100, WS100 from TrainData.csv
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
-        """
-        print(features, '\n')
-        print(target, '\n')
-        print(pred_features, '\n')
-        print(power_solution)
+        
+        look_back = 1
 
-        print(target.shape)
-        print(pred_features.shape)
-        """
+        trainX, trainY = Data.create_dataset(target, look_back)          # training data set 
+        testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set 
 
         if LR == True:
 
@@ -259,7 +255,26 @@ if __name__ == '__main__':
             # Funker ikke!
 
             # Linear Regression
-            y_pred, power_solution = ML.linreg(features, target, pred_features, power_solution)
+            testPredict, powerrr = ML.linreg(trainX, trainY, testX, testY)
+
+
+            # Shift the predictions so that they align on the x-axis with the original dataset
+            # for creating dataframes, plotting etc.          
+
+            # shift train predictions, vi trenger kanskje ikke train predictions slik som eksempelet?
+            #trainPredictPlot = numpy.empty_like(dataset)
+            #trainPredictPlot[:, :] = numpy.nan
+            #trainPredictPlot[look_back:len(trainPredict)+look_back, :] = trainPredict
+            
+            print(len(trainX), len(trainY), len(target), len(testX), len(testY), len(power_solution))
+            print(testPredict.shape)
+
+            # shift test predictions
+            testPredict_       = np.empty_like(power_solution)
+            #testPredict_[:, :] = np.nan
+            testPredict_[len(trainX)+(look_back*2)+1:len(power_solution)-1] = testPredict
+
+            y_pred = testPredict_
 
             # Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred, time=timestamps, \
@@ -272,7 +287,7 @@ if __name__ == '__main__':
             if Plot == True:     # Graphical illustration
                 P.prediction_solution_plot(y_pred, power_solution, times_plot, \
                                            title="Linear Regression", \
-                                           figname="Results/Task3_LR.png", savefig=True)
+                                           figname="Results/Task3_LR.png", savefig=False)
 
         if RNN == True:
             print("Recurrent Neural Network (RNN)\n")
