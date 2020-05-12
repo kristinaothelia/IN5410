@@ -2,7 +2,6 @@
 IN5410 - Energy informatics | Assignment 2
 """
 import datetime
-
 import matplotlib.pyplot 		as plt
 import matplotlib.dates         as mdates
 import MachineLearning          as ML
@@ -18,7 +17,7 @@ def prediction_solution_plot(y_pred, power_solution, date, title="", figname='',
     """
     Function thats plots the predicted power vs. the actual generated power
     """
-    fig, ax = plt.subplots(figsize=(8.5, 4.5))
+    fig, ax = plt.subplots(figsize=(8.8, 4.2))
     ax.plot_date(date, power_solution, 'g-', linewidth=0.9, label="Real")
     ax.plot_date(date, y_pred, 'b-', linewidth=0.9, label="Predicted")
     fig.autofmt_xdate(ha='center')
@@ -31,7 +30,7 @@ def prediction_solution_plot(y_pred, power_solution, date, title="", figname='',
     plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
 
     if savefig:
-        plt.savefig(figname);  print("--> Figure saved")
+        plt.savefig(figname);  print("--> Figure saved"); plt.show()
     else:
         plt.show()
 
@@ -53,7 +52,7 @@ def prediction_solution_plot_T2(y_pred, y_pred_mlr, power_solution, date, title=
     plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
 
     if savefig:
-        plt.savefig(figname); print("--> Figure saved")
+        plt.savefig(figname); print("--> Figure saved"); plt.show()
     else:
         plt.show()
 
@@ -61,7 +60,7 @@ def prediction_solution_plot_T3(y_pred, power_solution, title="", figname='', sa
     """
     Function thats plots the predicted power vs. the actual generated power
     """
-    fig, ax = plt.subplots(figsize=(8.5, 4.5))
+    fig, ax = plt.subplots(figsize=(8.8, 4.2))
     ax.plot(power_solution, 'g-', linewidth=0.9, label="Real")
     ax.plot(y_pred, 'b-', linewidth=0.9, label="Predicted")
 
@@ -71,7 +70,7 @@ def prediction_solution_plot_T3(y_pred, power_solution, title="", figname='', sa
     plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
 
     if savefig:
-        plt.savefig(figname);  print("--> Figure saved")
+        plt.savefig(figname);  print("--> Figure saved"); plt.show()
     else:
         plt.show()
 
