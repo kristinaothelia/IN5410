@@ -306,12 +306,6 @@ if __name__ == '__main__':
             print(test_pred.shape)
             print(testY.shape)
 
-            # invert predictions
-            #trainPredict = scaler.inverse_transform(trainPredict)
-            #trainY = scaler.inverse_transform([trainY])
-            #testPredict = scaler.inverse_transform(testPredict)
-            #testY = scaler.inverse_transform([testY])
-
             rmse = ML.RMSE(testY, test_pred)
             print(rmse)
 
