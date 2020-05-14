@@ -322,6 +322,57 @@ def RNN(look_back, trainX, trainY, testX):
 	return trainPredict, testPredict
 
 
+
+def LR_SVR(trainX, trainY, testX, testY):
+
+	"""
+	def timeseries_to_supervised(data, lag=1):
+		'''
+		Transformes the timeseries data into supervised dataset
+								 [a1, a2]
+								 [a2, a3]
+		[a1,a2,a3,a4,a5,a6] ---> [a3, a4]
+								 [a4, a5]
+								 [a5, a6]
+								 [a6,  0]
+		'''
+		df = pd.DataFrame(data)
+		columns = [df.shift(i) for i in range(1, lag+1)]
+		columns.append(df)
+		df = pd.concat(columns, axis=1)
+		df.fillna(0, inplace=True)
+		return df
+	"""
+
+	""" Noe aa bruke?
+	for i in range(len(solution_power)):
+		#print(np.array([previous_power]).shape)
+		next_hour_prediction = model.predict(np.array([previous_power]))[0][0]
+		#print(next_hour_prediction)
+		power_prediction.append(next_hour_prediction)
+
+		previous_power = previous_power[1:]
+		previous_power.append(next_hour_prediction)
+	"""
+
+	#supervised          = timeseries_to_supervised(target, 1)
+	#supervised_values   = supervised.values
+
+	#trainX = supervised_values[:,0].reshape(1, -1)
+	#trainY = supervised_values[:,1].reshape(1, -1)
+	#testX  = power_solution
+
+	y_pred_LR, power_solution = linreg(features=trainX, target=trainY, pred_features=testX, power_solution=testY)	# ??
+	y_pred_SVR, power_solution, kernel, C, gamma, epsilon = SVR_func(features=trainX, target=trainY, pred_features=testX, power_solution=testY)
+	#trainPredict, testPredict = linear_regression_T3(X_train=trainX, y_train=trainY, X_test=testX)
+	return y_pred_LR, y_pred_SVR, power_solution
+
+
+
+
+def FFNN_RNN():
+	pass
+
 # -----------------------------------------------------------------------------
 
 def R2(power_solution, y_pred):
