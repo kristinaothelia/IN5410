@@ -4,9 +4,10 @@ IN5410 - Energy informatics | Assignment 2
 Linear Regression           | linreg
 k-Nearest Neighbor          | kNN
 Supported Vector Regression | SVR
-Artificial Neural Networks  | ANN
+Feedforward Neural Networks | FFNN
+Recurrent Neural Networks  	| RNN
 
-We use the following train/test data for all Machine Learning methods:
+We use the following train/test data for Task 1 and 2 Machine Learning methods:
 X_train						| features
 X_test						| pred_features
 y_train						| target
@@ -28,7 +29,7 @@ from sklearn.metrics       	  	import mean_squared_error, r2_score
 from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
-
+print("test")
 # For implementing RNN
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
@@ -175,7 +176,6 @@ def SVR_func(features, target, pred_features, power_solution, default=True):
 
 	return y_pred, power_solution, kernel, C, gamma, epsilon
 
-
 def FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=False):
 	""" Finding the best parameters using GridSearchCV """
 
@@ -194,7 +194,6 @@ def FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, 
 	print("\nBest parameters: ", best_params)
 
 	return best_params
-
 
 def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals, shuffle=False):
 	"""
@@ -295,7 +294,7 @@ def RNN(look_back, trainX, trainY, testX):
 	# make predictions
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
-	
+
 	'''
 	# Annet eksempel:
 	# Initilizing the RNN

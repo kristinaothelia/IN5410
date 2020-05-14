@@ -240,37 +240,117 @@ if __name__ == '__main__':
         the true wind power measurements (in the file Solution.csv).
         """
 
+
+        """
+        Kanskje vi maa prove aa se mer hva disse gjor under Task 3
+        https://github.uio.no/bjornife/INF5870_oblig2/blob/master/task3.py
+        https://github.uio.no/bjornife/INF5870_oblig2/blob/master/task3v2.py
+        """
+
         # Remove U10, V10, WS10, U100, V100, WS100 from TrainData.csv
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
-        
-        look_back = 1
 
-        trainX, trainY = Data.create_dataset(target, look_back)          # training data set 
-        testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set 
+        look_back = 1       # Hva burde denne vere..?
+
+        trainX, trainY = Data.create_dataset(target, look_back)          # training data set
+        testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set
+
 
         if LR == True:
 
             print("Linear Regression (LR)\n")
 
+
+            def Copy_andre(features, target, pred_features, power_solution):
+                from sklearn.linear_model     	import LinearRegression
+                from sklearn.metrics       	  	import mean_squared_error, r2_score
+
+                training_power = list(target.flatten())
+                solution_power = list(power_solution.flatten())
+
+
+                features = 1000     # ???
+                target_power = np.array([training_power[features:]]).T
+
+                samples = [training_power[i:i+features] for i in range(len(training_power)-features)]
+                samples = np.array(samples)
+
+                #print(samples.shape)
+                #print(target_power.shape)
+
+                #************* Training *************#
+                model = LinearRegression()
+                model.fit(samples,target_power)
+                #*************************************#
+
+                power_prediction = []
+                previous_power = training_power[-features:]
+                for i in range(len(solution_power)):
+                    #print(np.array([previous_power]).shape)
+                    next_hour_prediction = model.predict(np.array([previous_power]))[0][0]
+                    #print(next_hour_prediction)
+                    power_prediction.append(next_hour_prediction)
+
+                    previous_power = previous_power[1:]
+                    previous_power.append(next_hour_prediction)
+
+                print(len(solution_power))
+
+                #************* Prediction ************#
+                error = np.array(power_prediction) - np.array(solution_power)
+                squared_error = error**2
+                mse = np.sum(squared_error)/error.shape[0]
+                rmse = np.sqrt(mse)
+                print(np.sqrt(mean_squared_error(solution_power, power_prediction)))
+                print(r2_score(solution_power, power_prediction))
+
+            Copy_andre(features, target, pred_features, power_solution)
+
+            # LR test. Tor dette blir for simpelt..?
+            def linear_regression_T3(X_train, y_train, X_test, y_test):
+                '''
+                Linear regressor function that trains the model, predicts, prints
+                errors and plots the results.
+                '''
+                from sklearn.linear_model     	import LinearRegression
+                regr = LinearRegression()
+                regr.fit(X_train, y_train)
+
+                trainPredict = regr.predict(X_train)
+                testPredict  = regr.predict(X_test)
+
+                return trainPredict, testPredict
+
+            train_pred, test_pred = linear_regression_T3(trainX, trainY, testX, testY)
+
+            P.Metrics(testY, test_pred, param="", method="LR", filename="Model_evaluation/Task3_LR.txt")
+            P.prediction_solution_plot_T3(test_pred, testY, title="...", figname='Results/Task3_LR.png', savefig=False)
+
+
+            """
             # Funker ikke!
 
             # Linear Regression
             testPredict, powerrr = ML.linreg(trainX, trainY, testX, testY)
 
-
             # Shift the predictions so that they align on the x-axis with the original dataset
-            # for creating dataframes, plotting etc.          
+            # for creating dataframes, plotting etc.
 
             # shift train predictions, vi trenger kanskje ikke train predictions slik som eksempelet?
             #trainPredictPlot = numpy.empty_like(dataset)
             #trainPredictPlot[:, :] = numpy.nan
             #trainPredictPlot[look_back:len(trainPredict)+look_back, :] = trainPredict
-            
-            print(len(trainX), len(trainY), len(target), len(testX), len(testY), len(power_solution))
-            print(testPredict.shape)
+
+            #print(len(trainX), len(trainY), len(target), len(testX), len(testY), len(power_solution))
+            # =     16078           16078       16080       718         718             720
+            print(testPredict.shape())
+            # Power sol and target are 2 too long
+            power_solution = power_solution[:-2]        # Bare for aa teste...
 
             # shift test predictions
-            testPredict_       = np.empty_like(power_solution)
+            testPredict_       = np.empty_like(power_solution).flatten()
+            print(testPredict_.shape()) # Skal denne vere 0-ere??
+
             #testPredict_[:, :] = np.nan
             testPredict_[len(trainX)+(look_back*2)+1:len(power_solution)-1] = testPredict # does not work......
 
@@ -288,14 +368,14 @@ if __name__ == '__main__':
                 P.prediction_solution_plot(y_pred, power_solution, times_plot, \
                                            title="Linear Regression", \
                                            figname="Results/Task3_LR.png", savefig=False)
-
+            """
         if RNN == True:
             print("Recurrent Neural Network (RNN)\n")
 
-            look_back = 1
+            #look_back = 1
 
-            trainX, trainY = Data.create_dataset(target, look_back)
-            testX, testY   = Data.create_dataset(power_solution, look_back)
+            #trainX, trainY = Data.create_dataset(target, look_back)
+            #testX, testY   = Data.create_dataset(power_solution, look_back)
 
             # reshape input to be [samples, time steps, features]
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
@@ -312,8 +392,8 @@ if __name__ == '__main__':
             #testPredict = scaler.inverse_transform(testPredict)
             #testY = scaler.inverse_transform([testY])
 
-            rmse = ML.RMSE(testY, test_pred)
-            print(rmse)
+            #rmse = ML.RMSE(testY, test_pred)
+            #print(rmse)
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot_T3(test_pred, testY, \
