@@ -327,6 +327,10 @@ if __name__ == '__main__':
             print(test_pred.shape)
             print(testY.shape)
 
+<<<<<<< HEAD
+            rmse = ML.RMSE(testY, test_pred)
+            print(rmse)
+=======
             # invert predictions
             #trainPredict = scaler.inverse_transform(trainPredict)
             #trainY = scaler.inverse_transform([trainY])
@@ -335,6 +339,7 @@ if __name__ == '__main__':
 
             #rmse = ML.RMSE(testY, test_pred)
             #print(rmse)
+>>>>>>> 23366369ada914d230f7a42ef74bdac8146056b5
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot_T3(test_pred, testY, \
