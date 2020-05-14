@@ -242,35 +242,48 @@ if __name__ == '__main__':
 
         # Remove U10, V10, WS10, U100, V100, WS100 from TrainData.csv
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
-        
-        look_back = 1
 
-        trainX, trainY = Data.create_dataset(target, look_back)          # training data set 
-        testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set 
 
         if LR == True:
 
-            print("Linear Regression (LR)\n")
+            print("LR and SVR\n")
 
+            look_back = 1       # Hva burde denne vere..?
+
+            trainX, trainY = Data.create_dataset(target, look_back)          # training data set
+            testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set
+
+            y_pred_LR, y_pred_SVR, power_solution = ML.LR_SVR(trainX, trainY, testX, testY)
+
+            P.Metrics(power_solution, y_pred_LR, param="", method="LR", filename="Model_evaluation/Task3_LR.txt")
+            P.Metrics(power_solution, y_pred_SVR, param="", method="SVR", filename="Model_evaluation/Task3_SVR.txt")
+            P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-1], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
+
+
+            """
             # Funker ikke!
 
             # Linear Regression
             testPredict, powerrr = ML.linreg(trainX, trainY, testX, testY)
 
-
             # Shift the predictions so that they align on the x-axis with the original dataset
-            # for creating dataframes, plotting etc.          
+            # for creating dataframes, plotting etc.
 
             # shift train predictions, vi trenger kanskje ikke train predictions slik som eksempelet?
             #trainPredictPlot = numpy.empty_like(dataset)
             #trainPredictPlot[:, :] = numpy.nan
             #trainPredictPlot[look_back:len(trainPredict)+look_back, :] = trainPredict
-            
-            print(len(trainX), len(trainY), len(target), len(testX), len(testY), len(power_solution))
-            print(testPredict.shape)
+
+            #print(len(trainX), len(trainY), len(target), len(testX), len(testY), len(power_solution))
+            # =     16078           16078       16080       718         718             720
+            print(testPredict.shape())
+            # Power sol and target are 2 too long
+            power_solution = power_solution[:-2]        # Bare for aa teste...
 
             # shift test predictions
-            testPredict_       = np.empty_like(power_solution)
+            testPredict_       = np.empty_like(power_solution).flatten()
+            print(testPredict_.shape()) # Skal denne vere 0-ere??
+
             #testPredict_[:, :] = np.nan
             testPredict_[len(trainX)+(look_back*2)+1:len(power_solution)-1] = testPredict # does not work......
 
@@ -288,11 +301,12 @@ if __name__ == '__main__':
                 P.prediction_solution_plot(y_pred, power_solution, times_plot, \
                                            title="Linear Regression", \
                                            figname="Results/Task3_LR.png", savefig=False)
+            """
 
-        if RNN == True:
+        elif RNN == True:
             print("Recurrent Neural Network (RNN)\n")
 
-            look_back = 1
+            look_back = 1       # Skal nok ikke vere 1 her...?
 
             trainX, trainY = Data.create_dataset(target, look_back)
             testX, testY   = Data.create_dataset(power_solution, look_back)
@@ -306,8 +320,19 @@ if __name__ == '__main__':
             print(test_pred.shape)
             print(testY.shape)
 
+<<<<<<< HEAD
             rmse = ML.RMSE(testY, test_pred)
             print(rmse)
+=======
+            # invert predictions
+            #trainPredict = scaler.inverse_transform(trainPredict)
+            #trainY = scaler.inverse_transform([trainY])
+            #testPredict = scaler.inverse_transform(testPredict)
+            #testY = scaler.inverse_transform([testY])
+
+            #rmse = ML.RMSE(testY, test_pred)
+            #print(rmse)
+>>>>>>> 23366369ada914d230f7a42ef74bdac8146056b5
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot_T3(test_pred, testY, \

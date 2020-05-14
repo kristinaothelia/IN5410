@@ -4,9 +4,10 @@ IN5410 - Energy informatics | Assignment 2
 Linear Regression           | linreg
 k-Nearest Neighbor          | kNN
 Supported Vector Regression | SVR
-Artificial Neural Networks  | ANN
+Feedforward Neural Networks | FFNN
+Recurrent Neural Networks  	| RNN
 
-We use the following train/test data for all Machine Learning methods:
+We use the following train/test data for Task 1 and 2 Machine Learning methods:
 X_train						| features
 X_test						| pred_features
 y_train						| target
@@ -28,7 +29,7 @@ from sklearn.metrics       	  	import mean_squared_error, r2_score
 from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
-
+print("test")
 # For implementing RNN
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
@@ -175,7 +176,6 @@ def SVR_func(features, target, pred_features, power_solution, default=True):
 
 	return y_pred, power_solution, kernel, C, gamma, epsilon
 
-
 def FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=False):
 	""" Finding the best parameters using GridSearchCV """
 
@@ -194,7 +194,6 @@ def FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, 
 	print("\nBest parameters: ", best_params)
 
 	return best_params
-
 
 def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_vals, lmbd_vals, shuffle=False):
 	"""
@@ -295,7 +294,7 @@ def RNN(look_back, trainX, trainY, testX):
 	# make predictions
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
-	
+
 	'''
 	# Annet eksempel:
 	# Initilizing the RNN
@@ -322,6 +321,57 @@ def RNN(look_back, trainX, trainY, testX):
 	'''
 	return trainPredict, testPredict
 
+
+
+def LR_SVR(trainX, trainY, testX, testY):
+
+	"""
+	def timeseries_to_supervised(data, lag=1):
+		'''
+		Transformes the timeseries data into supervised dataset
+								 [a1, a2]
+								 [a2, a3]
+		[a1,a2,a3,a4,a5,a6] ---> [a3, a4]
+								 [a4, a5]
+								 [a5, a6]
+								 [a6,  0]
+		'''
+		df = pd.DataFrame(data)
+		columns = [df.shift(i) for i in range(1, lag+1)]
+		columns.append(df)
+		df = pd.concat(columns, axis=1)
+		df.fillna(0, inplace=True)
+		return df
+	"""
+
+	""" Noe aa bruke?
+	for i in range(len(solution_power)):
+		#print(np.array([previous_power]).shape)
+		next_hour_prediction = model.predict(np.array([previous_power]))[0][0]
+		#print(next_hour_prediction)
+		power_prediction.append(next_hour_prediction)
+
+		previous_power = previous_power[1:]
+		previous_power.append(next_hour_prediction)
+	"""
+
+	#supervised          = timeseries_to_supervised(target, 1)
+	#supervised_values   = supervised.values
+
+	#trainX = supervised_values[:,0].reshape(1, -1)
+	#trainY = supervised_values[:,1].reshape(1, -1)
+	#testX  = power_solution
+
+	y_pred_LR, power_solution = linreg(features=trainX, target=trainY, pred_features=testX, power_solution=testY)	# ??
+	y_pred_SVR, power_solution, kernel, C, gamma, epsilon = SVR_func(features=trainX, target=trainY, pred_features=testX, power_solution=testY)
+	#trainPredict, testPredict = linear_regression_T3(X_train=trainX, y_train=trainY, X_test=testX)
+	return y_pred_LR, y_pred_SVR, power_solution
+
+
+
+
+def FFNN_RNN():
+	pass
 
 # -----------------------------------------------------------------------------
 
