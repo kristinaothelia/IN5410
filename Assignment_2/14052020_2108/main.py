@@ -243,14 +243,9 @@ if __name__ == '__main__':
         # Remove U10, V10, WS10, U100, V100, WS100 from TrainData.csv
         # We will only use Target and Power solution now.
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
-<<<<<<< HEAD
-        print(power_solution.shape)
-
-=======
 
         # Kanskje bare droppe if paa denne? Det er liksom bare task 3 siden vi skal lage felles plott osv..
         # Men vi maa vel gjore GridSearch fortsatt.. Eller default fra task 1? (utenom RNN)
->>>>>>> f3bdd02c21d22030b11d897f53fff422597b4e93
         if LR == True:
 
             print("LR and SVR\n")
@@ -262,26 +257,6 @@ if __name__ == '__main__':
 
             y_pred_LR, y_pred_SVR, power_solution = ML.LR_SVR(trainX, trainY, testX, testY)
 
-<<<<<<< HEAD
-            print(y_pred_LR.shape, power_solution.shape)
-
-            yhat = y_pred_SVR #y_pred_LR
-            # reshape testX from (719,1) to (719,)
-            testX = testX.flatten()                #same as: testX.reshape(testX.shape[0])
-            # invert scaling for forecast
-            inv_yhat = np.concatenate((yhat, testX))
-            # invert scaling for actual
-            power_solution = power_solution.flatten()
-            inv_y = np.concatenate((power_solution, testX))
-            # calculate RMSE
-            print(inv_y.shape, inv_yhat.shape)
-            rmse = ML.RMSE(inv_y, inv_yhat)
-            print(rmse)
-
-            P.Metrics(power_solution, y_pred_LR, param="", method="LR", filename="Model_evaluation/Task3_LR.txt")
-            P.Metrics(power_solution, y_pred_SVR, param="", method="SVR", filename="Model_evaluation/Task3_SVR.txt")
-            P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-1], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
-=======
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred_LR, time=timestamps[:-1], \
                                   name='Predictions/ForecastTemplate3-LR.csv')
@@ -290,7 +265,6 @@ if __name__ == '__main__':
 
             P.Metrics_compare(power_solution, y_pred_LR, y_pred_SVR, filename="Model_evaluation/Task3_LR_SVR.txt", Task2=True)
             P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-look_back], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
->>>>>>> f3bdd02c21d22030b11d897f53fff422597b4e93
 
 
             """
@@ -348,17 +322,11 @@ if __name__ == '__main__':
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX, testY)
+            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX)
 
             print(test_pred.shape)
             print(testY.shape)
 
-            rmse = ML.RMSE(testY, test_pred)
-            print(rmse)
-<<<<<<< HEAD
-
-=======
->>>>>>> f3bdd02c21d22030b11d897f53fff422597b4e93
             # invert predictions
             #trainPredict = scaler.inverse_transform(trainPredict)
             #trainY = scaler.inverse_transform([trainY])
