@@ -282,59 +282,49 @@ def RNN(look_back, trainX, trainY, testX, testy):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
+	# look_back is 'the number of features'
 
+	# We could maybe try 'gridsearching' these: 
+	# 	hidden_node = [4, 6, 10, 15]     			or something..?
+	#	epoch_size  = [5, 10, 15, 20]   			or something..?  (=150 in PP lecture slide)
+	#	batch_size  = [1, 5, 10]         			or something..?
+	#	optimizer='adam'/'sdg'           
+	#	activation='sigmoid'/'relu'
+	
+	
+	# Values from slide 45 from lecture PP TimeSeriesProduction... If i have implemented correctly xD
+	input_node  = 1     # = n_time_steps????
+	hidden_node = 10  	# number of hidden nodes in the hidden layer
+	output_node = 1	  	# output node (1 because we want a single prediction output)
+	epo 		= 20  	# an epoch is one pass over the training dataset, consists of one or more batches
+	bz 			= 5		# a collection of samples that the network will process, used to update the weights
 
-	# values from slide 45 at PP TimeSeriesProduction...?
-	input_node  = 1
-	hidden_node = 10
-	output_node = 1
-	epo = 10
-	bz=10
-	# create and fit the LSTM network
+	# create and fit the LSTM network, using default sigmoid activation.....                      # return_sequences=True #stateful=True
 	model = Sequential()
-	model.add(LSTM(units=hidden_node, input_shape=(input_node, look_back)))  # return_sequences=True #stateful=True
-	model.add(Dense(output_node))                           
+	model.add(LSTM(units=hidden_node, activation='sigmoid', input_shape=(input_node, look_back))) # input & first hidden layer
+	model.add(Dense(output_node))                           									  # output layer
 	model.compile(loss='mean_squared_error', optimizer='adam')
 	#model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
 
-	history = model.fit(trainX, trainY, epochs=epo, batch_size=bz, validation_data=(testX, testy), verbose=2, shuffle=False)
+	history = model.fit(trainX, trainY, epochs=epo, batch_size=bz, validation_data=(testX, testy), verbose=2, shuffle=True)
 
-	# plot history
-	plt.plot(history.history['loss'], label='train')
-	plt.plot(history.history['val_loss'], label='test')
+	# plotting mse against n epoch for the train and validation/test data
+	# may be useful to pick n epochs, evaluate underfitting/overfitting
+	plt.plot(history.history['loss'],              label='Training data')
+	plt.plot(history.history['val_loss'],          label='Validation data')
+	plt.xlabel('Number of epochs',                 fontsize='15')
+	plt.ylabel('Mean Squared Error',      		   fontsize='15')
+	plt.title('Model Performance, epochs=%g' %epo, fontsize='15')
 	plt.legend()
+	plt.savefig('Model_evaluation/train_test_performance_hnode%g_bz%g.png' %(hidden_node, bz))
 	plt.show()
 
 	print(model.summary())
 
-	# make predictions
+	# making predictions
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 
-	'''
-	# Annet eksempel:
-	# Initilizing the RNN
-	reg = Sequential()
-
-	# Adding the first LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1],1)))
-	reg.add(Dropout(0.2))
-
-	# Adding a second LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50, return_sequences = True))
-	reg.add(Dropout(0.2))
-
-	# Adding a third LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50, return_sequences = True))
-	reg.add(Dropout(0.2))
-
-	# Adding a fourth LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50))
-	reg.add(Dropout(0.2))
-
-	# Adding the output layer
-	reg.add(Dense(units=1))
-	'''
 	return trainPredict, testPredict
 
 
