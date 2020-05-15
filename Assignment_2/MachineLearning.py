@@ -284,7 +284,7 @@ def RNN(look_back, trainX, trainY, testX, testy):
 	# Installing keras: https://anaconda.org/conda-forge/keras
 
 
-	# values from slide 45 at PP TimeSeriesProduction...? ikke helt riktig tror jeg...
+	# values from slide 45 at PP TimeSeriesProduction...?
 	input_node  = 1
 	hidden_node = 10
 	output_node = 1
@@ -292,8 +292,7 @@ def RNN(look_back, trainX, trainY, testX, testy):
 	bz=10
 	# create and fit the LSTM network
 	model = Sequential()
-	model.add(LSTM(units=input_node, input_shape=(1, look_back)))  # return_sequences=True #stateful=True
-	model.add(LSTM(units=hidden_node, return_sequences=True))
+	model.add(LSTM(units=hidden_node, input_shape=(input_node, look_back)))  # return_sequences=True #stateful=True
 	model.add(Dense(output_node))                           
 	model.compile(loss='mean_squared_error', optimizer='adam')
 	#model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
