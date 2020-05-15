@@ -242,7 +242,7 @@ if __name__ == '__main__':
 
         # Remove U10, V10, WS10, U100, V100, WS100 from TrainData.csv
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
-
+        print(power_solution.shape)
 
         if LR == True:
 
@@ -254,6 +254,21 @@ if __name__ == '__main__':
             testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set
 
             y_pred_LR, y_pred_SVR, power_solution = ML.LR_SVR(trainX, trainY, testX, testY)
+
+            print(y_pred_LR.shape, power_solution.shape)
+
+            yhat = y_pred_SVR #y_pred_LR
+            # reshape testX from (719,1) to (719,)
+            testX = testX.flatten()                #same as: testX.reshape(testX.shape[0])
+            # invert scaling for forecast
+            inv_yhat = np.concatenate((yhat, testX))
+            # invert scaling for actual
+            power_solution = power_solution.flatten()
+            inv_y = np.concatenate((power_solution, testX))
+            # calculate RMSE
+            print(inv_y.shape, inv_yhat.shape)
+            rmse = ML.RMSE(inv_y, inv_yhat)
+            print(rmse)
 
             P.Metrics(power_solution, y_pred_LR, param="", method="LR", filename="Model_evaluation/Task3_LR.txt")
             P.Metrics(power_solution, y_pred_SVR, param="", method="SVR", filename="Model_evaluation/Task3_SVR.txt")
@@ -315,15 +330,14 @@ if __name__ == '__main__':
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX)
+            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX, testY)
 
             print(test_pred.shape)
             print(testY.shape)
 
-<<<<<<< HEAD
             rmse = ML.RMSE(testY, test_pred)
             print(rmse)
-=======
+
             # invert predictions
             #trainPredict = scaler.inverse_transform(trainPredict)
             #trainY = scaler.inverse_transform([trainY])
@@ -332,7 +346,6 @@ if __name__ == '__main__':
 
             #rmse = ML.RMSE(testY, test_pred)
             #print(rmse)
->>>>>>> 23366369ada914d230f7a42ef74bdac8146056b5
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot_T3(test_pred, testY, \
