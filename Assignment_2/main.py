@@ -335,7 +335,7 @@ if __name__ == '__main__':
         elif RNN == True:
             print("Recurrent Neural Network (RNN)\n")
 
-            look_back = 1       # Skal nok ikke vere 1 her...?
+            look_back = 3       # Skal nok ikke vere 1 her...?
 
             trainX, trainY = Data.create_dataset(target, look_back)
             testX, testY   = Data.create_dataset(power_solution, look_back)
