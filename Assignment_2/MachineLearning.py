@@ -276,40 +276,44 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 
 def RNN_gridsearch(features, target, pred_features, power_solution):
 	""" Finding the best parameters using GridSearchCV """
+
+
+	# We could maybe try something ish like these: 
+	# 	hidden_node = [4, 6, 10, 15]     	
+	#	epoch_size  = [5, 10, 15, 20]   			(=150 in PP lecture slide, takes loooong time..)
+	#	batch_size  = [1, 5, 10]
+	#	optimizer='adam'/'sdg'           
+	#	activation='sigmoid'/'relu'
+	
 	pass
 
-def RNN(look_back, trainX, trainY, testX, testy):
+def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
 	# look_back is 'the number of features'
-
-	# We could maybe try 'gridsearching' these: 
-	# 	hidden_node = [4, 6, 10, 15]     			or something..?
-	#	epoch_size  = [5, 10, 15, 20]   			or something..?  (=150 in PP lecture slide)
-	#	batch_size  = [1, 5, 10]         			or something..?
-	#	optimizer='adam'/'sdg'           
-	#	activation='sigmoid'/'relu'
 	
 	
 	# Values from slide 45 from lecture PP TimeSeriesProduction... If i have implemented correctly xD
-	input_node  = 1     # = n_time_steps????
+	input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
 	hidden_node = 10  	# number of hidden nodes in the hidden layer
 	output_node = 1	  	# output node (1 because we want a single prediction output)
 	epo 		= 20  	# an epoch is one pass over the training dataset, consists of one or more batches
 	bz 			= 5		# a collection of samples that the network will process, used to update the weights
 
-	# create and fit the LSTM network, using default sigmoid activation.....                      # return_sequences=True #stateful=True
+	# Create and fit the LSTM network, default activation is sigmoid           # return_sequences=True #stateful=True
 	model = Sequential()
 	model.add(LSTM(units=hidden_node, activation='sigmoid', input_shape=(input_node, look_back))) # input & first hidden layer
 	model.add(Dense(output_node))                           									  # output layer
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	#model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
+	model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
 
-	history = model.fit(trainX, trainY, epochs=epo, batch_size=bz, validation_data=(testX, testy), verbose=2, shuffle=True)
+	history = model.fit(trainX, trainY, epochs=epo, batch_size=bz, validation_data=(testX, testy), verbose=2, shuffle=False)
 
-	# plotting mse against n epoch for the train and validation/test data
-	# may be useful to pick n epochs, evaluate underfitting/overfitting
+	# Once the model is fit, we can estimate the performance of the model on the train and test datasets. 
+	# Estimating model performance may give us a point of comparison for creating new models.
+	# Here, we plot mse against n epochs for the train and validation/test data
+	# This can be useful to pick n epochs, evaluate underfitting/overfitting etc.
 	plt.plot(history.history['loss'],              label='Training data')
 	plt.plot(history.history['val_loss'],          label='Validation data')
 	plt.xlabel('Number of epochs',                 fontsize='15')
@@ -319,9 +323,11 @@ def RNN(look_back, trainX, trainY, testX, testy):
 	plt.savefig('Model_evaluation/train_test_performance_hnode%g_bz%g.png' %(hidden_node, bz))
 	plt.show()
 
-	print(model.summary())
 
-	# making predictions
+	if summary == True:
+		print(model.summary())
+
+	# Making predictions
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 

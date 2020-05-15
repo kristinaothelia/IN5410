@@ -345,7 +345,7 @@ if __name__ == '__main__':
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX, testY)
+            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX, testY, summary=True)
 
             print(test_pred.shape)
             print(testY.shape)
