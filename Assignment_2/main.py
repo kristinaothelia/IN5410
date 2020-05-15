@@ -333,6 +333,7 @@ if __name__ == '__main__':
             """
 
         elif RNN == True:
+            #https://machinelearningmastery.com/how-to-develop-a-skilful-time-series-forecasting-model/
             print("Recurrent Neural Network (RNN)\n")
 
             look_back = 3       # Skal nok ikke vere 1 her...?
