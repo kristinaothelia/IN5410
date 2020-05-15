@@ -283,15 +283,17 @@ def RNN(look_back, trainX, trainY, testX, testy):
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
 
+	units=4
 	epo = 10
+	bz=10
 	# create and fit the LSTM network
 	model = Sequential()
-	model.add(LSTM(4, input_shape=(1, look_back)))
+	model.add(LSTM(units=units, input_shape=(1, look_back)))  # return_sequences=True #stateful=True
 	model.add(Dense(1))                           
 	model.compile(loss='mean_squared_error', optimizer='adam')
 	#model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
 
-	history = model.fit(trainX, trainY, epochs=epo, batch_size=1, validation_data=(testX, testy), verbose=2, shuffle=False)
+	history = model.fit(trainX, trainY, epochs=epo, batch_size=bz, validation_data=(testX, testy), verbose=2, shuffle=False)
 
 	# plot history
 	plt.plot(history.history['loss'], label='train')
