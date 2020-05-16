@@ -244,8 +244,6 @@ if __name__ == '__main__':
         # We will only use Target and Power solution now.
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
 
-        print(power_solution.shape)
-
         # Kanskje bare droppe if paa denne? Det er liksom bare task 3 siden vi skal lage felles plott osv..
         # Men vi maa vel gjore GridSearch fortsatt.. Eller default fra task 1? (utenom RNN)
         if LR == True:
@@ -259,7 +257,7 @@ if __name__ == '__main__':
 
             y_pred_LR, y_pred_SVR, power_solution = ML.LR_SVR(trainX, trainY, testX, testY)
 
-
+            # Hmm eller testY..?
             P.Metrics(power_solution, y_pred_LR, param="", method="LR", filename="Model_evaluation/Task3_LR.txt")
             P.Metrics(power_solution, y_pred_SVR, param="", method="SVR", filename="Model_evaluation/Task3_SVR.txt")
             P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-1], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
@@ -295,44 +293,41 @@ if __name__ == '__main__':
 
         elif RNN == True:
             #https://machinelearningmastery.com/how-to-develop-a-skilful-time-series-forecasting-model/
-            print("Recurrent Neural Network (RNN)\n")
+            print("FFNN and Recurrent Neural Network (RNN)\n")
 
             look_back = 3       # Skal nok ikke vere 1 her...?
 
             trainX, trainY = Data.create_dataset(target, look_back)
             testX, testY   = Data.create_dataset(power_solution, look_back)
 
+            # FFNN
+            eta_vals   = [0.0001, 0.001, 0.01, 0.1]
+            lmbd_vals  = [0.0001, 0.001, 0.01, 0.1]
+
+            # FFNN calculated with random hyperparameter, we must remember to use the best values
+            y_pred_FFNN, power_solution, activation, solver, alpha, learning_rate_init \
+            = ML.FFNN(trainX, trainY, testX, testY, lmbd_vals, eta_vals, default=True, shuffle=False)
+
+            # RNN
             # Reshape input to be [samples, time steps, features]
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX, testY, summary=True)
+            train_pred, y_pred_RNN = ML.RNN(look_back, trainX, trainY, testX, testY, summary=True)
 
-            print(test_pred.shape); print(testY.shape)
+            print(y_pred_FFNN.shape);print(y_pred_RNN.shape); print(testY.shape)
 
-            rmse = ML.RMSE(testY, test_pred); print(rmse)
-
-
-            if Plot == True:    # Graphical illustration
-                P.prediction_solution_plot_T3(test_pred, testY, \
-                                              title="Recurrent Neural Network", \
-                                              figname='Results/Task3_RNN.png', savefig=True)
-
-            P.Metrics(testY, test_pred, param="", method="RNN", filename="Model_evaluation/Task3_RNN.txt")
-
-            """
-            # Denne delen maa inn naar hele koden fungerer! :)
 
             #Save predicted results in .cvs files
-            Data.Make_csv_dataset(prediction=y_pred_FFNN, time=timestamps[:-1], \
+            Data.Make_csv_dataset(prediction=y_pred_FFNN, time=timestamps[:-look_back], \
                                   name='Predictions/ForecastTemplate3-FFNN.csv')
-            Data.Make_csv_dataset(prediction=y_pred_RNN, time=timestamps[:-1], \
+            Data.Make_csv_dataset(prediction=y_pred_RNN, time=timestamps[:-look_back], \
                                   name='Predictions/ForecastTemplate3-RNN.csv')
 
             # Accuracy
             P.Metrics_compare(power_solution, y_pred_FFNN, y_pred_RNN, filename="Model_evaluation/Task3_FFNN_RNN.txt")
-            P.prediction_solution_plot_T3_1(y_pred_FFNN, y_pred_RNN, power_solution, times_plot[:-look_back], title="FFNN and RNN", figname='Results/Task3_FFNN_RNN.png', savefig=True)
-            """
+            P.prediction_solution_plot_T3_2(y_pred_FFNN, y_pred_RNN, power_solution, times_plot[:-look_back], title="FFNN and RNN", figname='Results/Task3_FFNN_RNN.png', savefig=True)
+
 
         else:
             print("Pass an argument for ML method for Task 3 (-R)")

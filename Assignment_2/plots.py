@@ -78,13 +78,14 @@ def prediction_solution_plot_T3_1(y_pred, y_pred_svr, power_solution, date, titl
     else:
         plt.show()
 
-def prediction_solution_plot_T3(y_pred, power_solution, title="", figname='', savefig=False):
+def prediction_solution_plot_T3_2(y_pred, y_pred_rnn, power_solution, title="", figname='', savefig=False):
     """
     Function thats plots the predicted power vs. the actual generated power
     """
     fig, ax = plt.subplots(figsize=(8.8, 4.2))
-    ax.plot(power_solution, 'g-', linewidth=0.9, label="Real")
-    ax.plot(y_pred, 'b-', linewidth=0.9, label="Predicted")
+    ax.plot_date(date, power_solution, 'g-', linewidth=0.9, label="Real")
+    ax.plot_date(date, y_pred, 'b-', linewidth=0.9, label="Predicted, FFNN")
+    ax.plot_date(date, y_pred_rnn, 'm-', linewidth=0.9, label="Predicted, RNN")
 
     plt.title(title, fontsize=15)
     plt.xlabel("Time", fontsize=15)
@@ -184,15 +185,15 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
 
 def history_plot(history, hidden_node, epochs, batch_size, savefig=True):
     """
-    Once the model is fit, we can estimate the performance of the model on the train and test datasets. 
+    Once the model is fit, we can estimate the performance of the model on the train and test datasets.
     Estimating model performance can provide a point of comparison for creating new models.
     In this function, we plot mse against n epochs for the train and validation/test data.
     This can be useful to pick n epochs, evaluate underfitting/overfitting etc.
     We also note the value of the hidden_nodes and batch size in the figure title,
     so that we can investigate if, and how, these values influence the model (n_epochs=constant).
     """
-    
-    # Setting new font properties 
+
+    # Setting new font properties
     # https://matplotlib.org/3.1.1/api/font_manager_api.html#matplotlib.font_manager.FontProperties
     # Use matplotlib.style.use('default') or rcdefaults() to restore the default rc params after changes.
     font = {'style'  : 'normal',
@@ -203,7 +204,7 @@ def history_plot(history, hidden_node, epochs, batch_size, savefig=True):
     plt.rc('font', **font)
 
 
-    # Plotting MSE against n_epochs to estimate model performance on train and test data 
+    # Plotting MSE against n_epochs to estimate model performance on train and test data
     plt.figure(figsize=(8.4, 5.8))
     plt.plot(history.history['loss'],      label='Train data')
     plt.plot(history.history['val_loss'],  label='Test data')
@@ -212,11 +213,11 @@ def history_plot(history, hidden_node, epochs, batch_size, savefig=True):
 
     plt.title('Model Performance\n [epochs=%g, batch_size=%g, hidden_nodes=%g]'\
             %(epochs, batch_size, hidden_node))
-    
+
     plt.legend()
-    
+
     if savefig == True:
         plt.savefig('Model_evaluation/RNN_performance/train_test_performance_epo%g_bz%g_hnode%g.png'\
                   %(epochs, batch_size, hidden_node))
-    
+
     plt.show()

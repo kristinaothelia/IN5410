@@ -30,7 +30,6 @@ from sklearn.metrics       	  	import mean_squared_error, r2_score
 from sklearn.neighbors 		  	import KNeighborsRegressor
 from sklearn.svm 			  	import SVR
 
-print("test")
 # For implementing RNN
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
@@ -363,6 +362,7 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 		                epochs=n_epochs,\
 		                batch_size=batches,\
 		                validation_data=(testX, testy),\
+						verbose=2,\
 		                shuffle=False)
 
 	# Tror ikke denne sier saa mye xP
