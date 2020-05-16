@@ -185,25 +185,38 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
 def history_plot(history, hidden_node, epochs, batch_size, savefig=True):
     """
     Once the model is fit, we can estimate the performance of the model on the train and test datasets. 
-    Estimating model performance may give us a point of comparison for creating new models.
-    Here, we plot mse against n epochs for the train and validation/test data
+    Estimating model performance can provide a point of comparison for creating new models.
+    In this function, we plot mse against n epochs for the train and validation/test data.
     This can be useful to pick n epochs, evaluate underfitting/overfitting etc.
+    We also note the value of the hidden_nodes and batch size in the figure title,
+    so that we can investigate if, and how, these values influence the model (n_epochs=constant).
     """
+    
+    # Setting new font properties 
+    # https://matplotlib.org/3.1.1/api/font_manager_api.html#matplotlib.font_manager.FontProperties
+    # Use matplotlib.style.use('default') or rcdefaults() to restore the default rc params after changes.
+    font = {'style'  : 'normal',
+            'variant': 'small-caps',
+            'weight' : 'light',
+            'size'   : 12}
 
-    plt.figure(fontsize='15')
-    plt.plot(history.history['loss'],      label='Training data')
-    plt.plot(history.history['val_loss'],  label='Validation data')
+    plt.rc('font', **font)
+
+
+    # Plotting MSE against n_epochs to estimate model performance on train and test data 
+    plt.figure(figsize=(8.4, 5.8))
+    plt.plot(history.history['loss'],      label='Train data')
+    plt.plot(history.history['val_loss'],  label='Test data')
     plt.xlabel('Number of epochs')
     plt.ylabel('Mean Squared Error')
 
-    plt.title('Model Performance\n epochs=%g, batch_size=%g, hidden_nodes=%g'\
+    plt.title('Model Performance\n [epochs=%g, batch_size=%g, hidden_nodes=%g]'\
             %(epochs, batch_size, hidden_node))
     
     plt.legend()
     
     if savefig == True:
-        plt.savefig('Model_evaluation/train_test_performance_hnode%g_epo%g_bz%g.png'\
-                  %(hidden_node, epochs, batch_size))
-        plt.show()
-    else:
-        plt.show()
+        plt.savefig('Model_evaluation/RNN_performance/train_test_performance_epo%g_bz%g_hnode%g.png'\
+                  %(epochs, batch_size, hidden_node))
+    
+    plt.show()

@@ -294,29 +294,32 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	# Installing keras: https://anaconda.org/conda-forge/keras
 	# look_back is 'the number of features'
 	
-	
 	# Values from slide 45 from lecture PP TimeSeriesProduction... If i have implemented correctly xD
 	input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
 	hidden_node = 10  	# number of hidden nodes in the hidden layer
 	output_node = 1	  	# output node (1 because we want a single prediction output)
-	epo 		= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
-	bz 			= 2		# a collection of samples that the network will process, used to update the weights
+	n_epochs 	= 8  	# an epoch is one pass over the training dataset, consists of one or more batches
+	batches 	= 2		# a collection of samples that the network will process, used to update the weights
 
-	# Create and fit the LSTM network, default activation is sigmoid           # return_sequences=True #stateful=True
+	# Create and fit the LSTM network (default activation is sigmoid)
+	# Can later experiment with adding more hidden layers to the RNN
+	# return_sequences=True (look at this if adding more hidden layers) # stateful=True
 	model = Sequential()
-	model.add(LSTM(units=hidden_node, activation='sigmoid', input_shape=(input_node, look_back))) # input & first hidden layer
-	model.add(Dense(output_node))                           									  # output layer
+
+	model.add(LSTM(units=hidden_node,\
+				   activation='sigmoid',\
+				   input_shape=(input_node, look_back)))       # both input & first hidden layer
+	model.add(Dense(output_node))                              # output layer
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
 
 	history = model.fit(trainX, trainY,\
-		                epochs=epo,\
-		                batch_size=bz,\
+		                epochs=n_epochs,\
+		                batch_size=batches,\
 		                validation_data=(testX, testy),\
 		                verbose=2,\
 		                shuffle=False)
 
-	P.history_plot(history, hidden_node, epochs, batch_size, savefig=True)
+	P.history_plot(history, hidden_node, n_epochs, batches, savefig=True)
 
 	if summary == True:
 		print(model.summary())
@@ -325,7 +328,7 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 
-	return trainPredict, testPredict, history
+	return trainPredict, testPredict
 
 
 
