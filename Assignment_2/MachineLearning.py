@@ -20,6 +20,7 @@ import matplotlib.pyplot 		as plt
 import pandas 					as pd
 import numpy  					as np
 import Data             		as Data
+import plots 					as P
 
 from sklearn.model_selection 	import GridSearchCV
 from sklearn.neural_network  	import MLPRegressor
@@ -298,8 +299,8 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
 	hidden_node = 10  	# number of hidden nodes in the hidden layer
 	output_node = 1	  	# output node (1 because we want a single prediction output)
-	epo 		= 20  	# an epoch is one pass over the training dataset, consists of one or more batches
-	bz 			= 5		# a collection of samples that the network will process, used to update the weights
+	epo 		= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
+	bz 			= 2		# a collection of samples that the network will process, used to update the weights
 
 	# Create and fit the LSTM network, default activation is sigmoid           # return_sequences=True #stateful=True
 	model = Sequential()
@@ -308,21 +309,14 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	model.compile(loss='mean_squared_error', optimizer='adam')
 	model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
 
-	history = model.fit(trainX, trainY, epochs=epo, batch_size=bz, validation_data=(testX, testy), verbose=2, shuffle=False)
+	history = model.fit(trainX, trainY,\
+		                epochs=epo,\
+		                batch_size=bz,\
+		                validation_data=(testX, testy),\
+		                verbose=2,\
+		                shuffle=False)
 
-	# Once the model is fit, we can estimate the performance of the model on the train and test datasets. 
-	# Estimating model performance may give us a point of comparison for creating new models.
-	# Here, we plot mse against n epochs for the train and validation/test data
-	# This can be useful to pick n epochs, evaluate underfitting/overfitting etc.
-	plt.plot(history.history['loss'],              label='Training data')
-	plt.plot(history.history['val_loss'],          label='Validation data')
-	plt.xlabel('Number of epochs',                 fontsize='15')
-	plt.ylabel('Mean Squared Error',      		   fontsize='15')
-	plt.title('Model Performance, epochs=%g' %epo, fontsize='15')
-	plt.legend()
-	plt.savefig('Model_evaluation/train_test_performance_hnode%g_bz%g.png' %(hidden_node, bz))
-	plt.show()
-
+	P.history_plot(history, hidden_node, epochs, batch_size, savefig=True)
 
 	if summary == True:
 		print(model.summary())
@@ -331,7 +325,7 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 
-	return trainPredict, testPredict
+	return trainPredict, testPredict, history
 
 
 

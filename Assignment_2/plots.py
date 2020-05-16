@@ -180,3 +180,30 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
 
     #else:
     plt.show()
+
+
+def history_plot(history, hidden_node, epochs, batch_size, savefig=True):
+    """
+    Once the model is fit, we can estimate the performance of the model on the train and test datasets. 
+    Estimating model performance may give us a point of comparison for creating new models.
+    Here, we plot mse against n epochs for the train and validation/test data
+    This can be useful to pick n epochs, evaluate underfitting/overfitting etc.
+    """
+
+    plt.figure(fontsize='15')
+    plt.plot(history.history['loss'],      label='Training data')
+    plt.plot(history.history['val_loss'],  label='Validation data')
+    plt.xlabel('Number of epochs')
+    plt.ylabel('Mean Squared Error')
+
+    plt.title('Model Performance\n epochs=%g, batch_size=%g, hidden_nodes=%g'\
+            %(epochs, batch_size, hidden_node))
+    
+    plt.legend()
+    
+    if savefig == True:
+        plt.savefig('Model_evaluation/train_test_performance_hnode%g_epo%g_bz%g.png'\
+                  %(hidden_node, epochs, batch_size))
+        plt.show()
+    else:
+        plt.show()
