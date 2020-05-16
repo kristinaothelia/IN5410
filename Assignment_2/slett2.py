@@ -82,6 +82,8 @@ plt.legend()#; plt.show()
 trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
+print(trainX.shape, testX.shape, '---')
+
 # create and fit the LSTM network
 model = Sequential()
 # What should the number be? 1?

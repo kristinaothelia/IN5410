@@ -20,6 +20,7 @@ import matplotlib.pyplot 		as plt
 import pandas 					as pd
 import numpy  					as np
 import Data             		as Data
+import plots 					as P
 
 from sklearn.model_selection 	import GridSearchCV
 from sklearn.neural_network  	import MLPRegressor
@@ -35,7 +36,7 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 #import keras
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout
+from keras.layers import Dense, LSTM, Dropout, SimpleRNN
 sys.stderr = stderr
 
 
@@ -276,49 +277,57 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 
 def RNN_gridsearch(features, target, pred_features, power_solution):
 	""" Finding the best parameters using GridSearchCV """
+
+
+	# We could maybe try something ish like these: 
+	# 	hidden_node = [4, 6, 10, 15]     	
+	#	epoch_size  = [5, 10, 15, 20]   			(=150 in PP lecture slide, takes loooong time..)
+	#	batch_size  = [1, 5, 10]
+	#	optimizer='adam'/'sdg'           
+	#	activation='sigmoid'/'relu'
+	
 	pass
 
-def RNN(look_back, trainX, trainY, testX):
+def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
+	# look_back is 'the number of features'
+	
+	# Values from slide 45 from lecture PP TimeSeriesProduction... If i have implemented correctly xD
+	input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
+	hidden_node = 10  	# number of hidden nodes in the hidden layer
+	output_node = 1	  	# output node (1 because we want a single prediction output)
+	n_epochs 	= 8  	# an epoch is one pass over the training dataset, consists of one or more batches
+	batches 	= 2		# a collection of samples that the network will process, used to update the weights
 
-	epo = 10
-	# create and fit the LSTM network
+	# Create and fit the LSTM network (default activation is sigmoid)
+	# Can later experiment with adding more hidden layers to the RNN
+	# return_sequences=True (look at this if adding more hidden layers) # stateful=True
 	model = Sequential()
-	model.add(LSTM(4, input_shape=(1, look_back)))
-	model.add(Dense(1))
-	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(trainX, trainY, epochs=epo, batch_size=1, verbose=2)
 
-	# make predictions
+	model.add(LSTM(units=hidden_node,\
+				   activation='sigmoid',\
+				   input_shape=(input_node, look_back)))       # both input & first hidden layer
+	model.add(Dense(output_node))                              # output layer
+	model.compile(loss='mean_squared_error', optimizer='adam')
+
+	history = model.fit(trainX, trainY,\
+		                epochs=n_epochs,\
+		                batch_size=batches,\
+		                validation_data=(testX, testy),\
+		                verbose=2,\
+		                shuffle=False)
+
+	P.history_plot(history, hidden_node, n_epochs, batches, savefig=True)
+
+	if summary == True:
+		print(model.summary())
+
+	# Making predictions
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 
-	'''
-	# Annet eksempel:
-	# Initilizing the RNN
-	reg = Sequential()
-
-	# Adding the first LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1],1)))
-	reg.add(Dropout(0.2))
-
-	# Adding a second LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50, return_sequences = True))
-	reg.add(Dropout(0.2))
-
-	# Adding a third LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50, return_sequences = True))
-	reg.add(Dropout(0.2))
-
-	# Adding a fourth LSTM layer and some Dropout regularization
-	reg.add(LSTM(units=50))
-	reg.add(Dropout(0.2))
-
-	# Adding the output layer
-	reg.add(Dense(units=1))
-	'''
 	return trainPredict, testPredict
 
 

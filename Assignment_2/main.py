@@ -244,6 +244,8 @@ if __name__ == '__main__':
         # We will only use Target and Power solution now.
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
 
+        print(power_solution.shape)
+
         # Kanskje bare droppe if paa denne? Det er liksom bare task 3 siden vi skal lage felles plott osv..
         # Men vi maa vel gjore GridSearch fortsatt.. Eller default fra task 1? (utenom RNN)
         if LR == True:
@@ -257,6 +259,11 @@ if __name__ == '__main__':
 
             y_pred_LR, y_pred_SVR, power_solution = ML.LR_SVR(trainX, trainY, testX, testY)
 
+
+            P.Metrics(power_solution, y_pred_LR, param="", method="LR", filename="Model_evaluation/Task3_LR.txt")
+            P.Metrics(power_solution, y_pred_SVR, param="", method="SVR", filename="Model_evaluation/Task3_SVR.txt")
+            P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-1], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
+
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred_LR, time=timestamps[:-1], \
                                   name='Predictions/ForecastTemplate3-LR.csv')
@@ -267,76 +274,44 @@ if __name__ == '__main__':
             P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-look_back], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
 
 
-            """
-            # Funker ikke!
+            '''
+            # some people are 'adding' the prediction (yhat) with testX  === yhat
+            # and the testY with Xtest                                   === y
+            # and then they calculate the rmse on the full/entire test set, maybe google/send mail about this
+            yhat = y_pred_SVR #y_pred_LR
+            # reshape testX from (719,1) to (719,)
+            testX = testX.flatten()
+            # invert scaling for forecast
+            inv_yhat = np.concatenate((yhat, testX))
+            # invert scaling for actual
+            power_solution = power_solution.flatten()
+            inv_y = np.concatenate((power_solution, testX))
+            # calculate RMSE
+            print(inv_y.shape, inv_yhat.shape)
+            rmse = ML.RMSE(inv_y, inv_yhat)
+            print(rmse)
+            '''
 
-            # Linear Regression
-            testPredict, powerrr = ML.linreg(trainX, trainY, testX, testY)
-
-            # Shift the predictions so that they align on the x-axis with the original dataset
-            # for creating dataframes, plotting etc.
-
-            # shift train predictions, vi trenger kanskje ikke train predictions slik som eksempelet?
-            #trainPredictPlot = numpy.empty_like(dataset)
-            #trainPredictPlot[:, :] = numpy.nan
-            #trainPredictPlot[look_back:len(trainPredict)+look_back, :] = trainPredict
-
-            #print(len(trainX), len(trainY), len(target), len(testX), len(testY), len(power_solution))
-            # =     16078           16078       16080       718         718             720
-            print(testPredict.shape())
-            # Power sol and target are 2 too long
-            power_solution = power_solution[:-2]        # Bare for aa teste...
-
-            # shift test predictions
-            testPredict_       = np.empty_like(power_solution).flatten()
-            print(testPredict_.shape()) # Skal denne vere 0-ere??
-
-            #testPredict_[:, :] = np.nan
-            testPredict_[len(trainX)+(look_back*2)+1:len(power_solution)-1] = testPredict # does not work......
-
-            y_pred = testPredict_
-
-            # Save predicted results in .cvs files
-            Data.Make_csv_dataset(prediction=y_pred, time=timestamps, \
-                                  name='Predictions/ForecastTemplate3-LR.csv')
-
-            # Accuracy, R**2
-            P.Metrics(power_solution, y_pred, method="Linear Regression (LR)", \
-                      filename="Model_evaluation/Task3_RMSE_LR.txt")
-
-            if Plot == True:     # Graphical illustration
-                P.prediction_solution_plot(y_pred, power_solution, times_plot, \
-                                           title="Linear Regression", \
-                                           figname="Results/Task3_LR.png", savefig=False)
-            """
 
         elif RNN == True:
+            #https://machinelearningmastery.com/how-to-develop-a-skilful-time-series-forecasting-model/
             print("Recurrent Neural Network (RNN)\n")
 
-            look_back = 1       # Skal nok ikke vere 1 her...?
+            look_back = 3       # Skal nok ikke vere 1 her...?
 
             trainX, trainY = Data.create_dataset(target, look_back)
             testX, testY   = Data.create_dataset(power_solution, look_back)
 
-            # reshape input to be [samples, time steps, features]
+            # Reshape input to be [samples, time steps, features]
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX)
+            train_pred, test_pred = ML.RNN(look_back, trainX, trainY, testX, testY, summary=True)
 
-            print(test_pred.shape)
-            print(testY.shape)
+            print(test_pred.shape); print(testY.shape)
 
-            rmse = ML.RMSE(testY, test_pred)
-            print(rmse)
-            # invert predictions
-            #trainPredict = scaler.inverse_transform(trainPredict)
-            #trainY = scaler.inverse_transform([trainY])
-            #testPredict = scaler.inverse_transform(testPredict)
-            #testY = scaler.inverse_transform([testY])
+            rmse = ML.RMSE(testY, test_pred); print(rmse)
 
-            #rmse = ML.RMSE(testY, test_pred)
-            #print(rmse)
 
             if Plot == True:    # Graphical illustration
                 P.prediction_solution_plot_T3(test_pred, testY, \
