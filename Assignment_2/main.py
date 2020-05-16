@@ -1,8 +1,8 @@
 """
 IN5410 - Energy informatics | Assignment 2
 """
-#import os, random, xlsxwriter, sys, argparse, warnings, csv
-import sys, argparse, warnings, csv
+import os, random, sys, argparse, warnings, csv
+#import sys, argparse, warnings, csv
 
 import matplotlib.pyplot 	as plt
 import numpy               	as np

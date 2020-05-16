@@ -275,50 +275,97 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 	return y_pred, power_solution, activation, solver, alpha, learning_rate_init
 
 
-def RNN_gridsearch(features, target, pred_features, power_solution):
+def RNN_gridsearch(input_node, look_back, epochs, batch_size):
 	""" Finding the best parameters using GridSearchCV """
 
 
-	# We could maybe try something ish like these: 
-	# 	hidden_node = [4, 6, 10, 15]     	
+	# We could maybe try something ish like these:
+	# 	hidden_node = [4, 6, 10, 15]
 	#	epoch_size  = [5, 10, 15, 20]   			(=150 in PP lecture slide, takes loooong time..)
 	#	batch_size  = [1, 5, 10]
-	#	optimizer='adam'/'sdg'           
+	#	optimizer='adam'/'sdg'
 	#	activation='sigmoid'/'relu'
-	
-	pass
+
+	parameters  = {	'units': [3, 10, 30, 60], \
+					'activation': ['sigmoid', 'relu'], \
+					'recurrent_activation': ['sigmoid', 'linear'], \
+					'optimizer': ['adam', 'sdg']}
+	rnn = Sequential()
+	rnn.add(LSTM(units=10, input_shape=(input_node, look_back)))
+	rnn.add(Dense(1))                              # output layer
+	rnn.compile(loss='mean_squared_error')
+
+	grid_search = GridSearchCV(rnn, parameters, n_jobs=-1)
+	grid_search.fit(trainX, trainY, epochs=epochs, batch_size=batch_size)
+
+	best_params = grid_search.best_params_
+	print("\nBest parameters: ", best_params)
+
+	return best_params
 
 def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
 	# look_back is 'the number of features'
-	
+
 	# Values from slide 45 from lecture PP TimeSeriesProduction... If i have implemented correctly xD
-	input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
+	#input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
+	input_node  = trainX.shape[1]
 	hidden_node = 10  	# number of hidden nodes in the hidden layer
 	output_node = 1	  	# output node (1 because we want a single prediction output)
-	n_epochs 	= 8  	# an epoch is one pass over the training dataset, consists of one or more batches
-	batches 	= 2		# a collection of samples that the network will process, used to update the weights
+	n_epochs 	= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
+	batches 	= 16	# a collection of samples that the network will process, used to update the weights
 
 	# Create and fit the LSTM network (default activation is sigmoid)
 	# Can later experiment with adding more hidden layers to the RNN
 	# return_sequences=True (look at this if adding more hidden layers) # stateful=True
 	model = Sequential()
 
+	"""
+	# YouTube
+	model.add(LSTM(4, activation='relu', return_sequences=True, input_shape=(trainX.shape[1], look_back)))
+	model.add(Dropout(0.2))
+	model.add(LSTM(20, activation='relu', return_sequences=True))
+	model.add(Dropout(0.2))
+	model.add(LSTM(80, activation='relu', return_sequences=True))
+	model.add(Dropout(0.2))
+	model.add(LSTM(120, activation='relu'))
+	model.add(Dropout(0.2))
+
+	model.add(Dense(1))
+	model.summary()
+
+	model.compile(loss='mean_squared_error', optimizer='adam')
+	model.fit(trainX, trainY, epochs=10, batch_size=16) # 32
+	"""
+
+
+
+
 	model.add(LSTM(units=hidden_node,\
 				   activation='sigmoid',\
 				   input_shape=(input_node, look_back)))       # both input & first hidden layer
+
 	model.add(Dense(output_node))                              # output layer
 	model.compile(loss='mean_squared_error', optimizer='adam')
 
+
+	""" Faar det ikke til aa funke...
+	best_params   		= RNN_gridsearch(input_node, look_back, n_epochs, batches)
+	exit()
+	reg 		  		= LSTM().set_params(**best_params)
+	units				= best_params['units']
+	activation    		= best_params['activation']
+	"""
+	# Er det denne vi maa bruke GSCV paa?
 	history = model.fit(trainX, trainY,\
 		                epochs=n_epochs,\
 		                batch_size=batches,\
 		                validation_data=(testX, testy),\
-		                verbose=2,\
 		                shuffle=False)
 
+	# Tror ikke denne sier saa mye xP
 	P.history_plot(history, hidden_node, n_epochs, batches, savefig=True)
 
 	if summary == True:
@@ -329,6 +376,7 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	testPredict  = model.predict(testX)
 
 	return trainPredict, testPredict
+
 
 
 
