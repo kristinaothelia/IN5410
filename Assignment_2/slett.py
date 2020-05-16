@@ -372,37 +372,19 @@ plt.show()
 #TASK 3
 
 #Linear Regression
-trainY = data['POWER']
-trainX = np.arange(len(trainY)).reshape(-1,1)
-testY = solution
-testX = np.arange(trainX[-1],len(testY)+trainX[-1]).reshape(-1, 1)
+train_y = data['POWER']
+train = np.arange(len(train_y)).reshape(-1,1)
+y_test = solution
+test = np.arange(train[-1],len(y_test)+train[-1]).reshape(-1, 1)
 
-print(np.shape(trainY))
+train_test = train, train_y, test, y_test
 
-
-def create_dataset(dataset, look_back=1):
-    dataX, dataY = [], []
-
-    for i in range(len(dataset)-look_back-1):
-        a = dataset[i:(i+look_back), 0]
-        b = dataset[i + look_back, 0]
-        dataX.append(a)
-        dataY.append(b)
-
-    return np.array(dataX), np.array(dataY)
-
-X, Y = create_dataset(trainY[:5], look_back=1)
-print(X, Y)
-
-
-train_test = trainX, trainY, testX, testY
-
-pred=linear_regression(*train_test, plot=True)
+pred=linear_regression(*train_test, plot=False )
 
 
 
 
-"""
+
 #RNN
 
 # frame a sequence as a supervised learning problem
@@ -477,6 +459,9 @@ print('**----Finished training----**')
 train_reshaped = supervised_values[:, 0].reshape(len(supervised_values), 1, 1)
 rnn_model.predict(train_reshaped, batch_size=batch_size)
 
+
+
+
 # walk-forward validation on the test data
 predictions = list()
 history = supervised_values[-batch_size:, -2]
@@ -486,6 +471,9 @@ for i in range(len(y_test)):
     # store forecast
     predictions.append(yhat)
     history = np.concatenate((history, np.array([yhat])), axis=0)
+
+
+
 
 # report performance
 r2 = r2_score(y_test.values, predictions)
@@ -507,4 +495,3 @@ ax.plot(pd.DataFrame(pred,index=y_test.index),label='LR')
 plt.legend()
 plt.gcf().autofmt_xdate()
 plt.show()
-"""

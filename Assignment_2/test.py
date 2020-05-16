@@ -45,27 +45,19 @@ solution = Data.Get_data(filename='/Data/Solution.csv')
 dataset  = dataset.loc[:, dataset.columns == 'POWER'].values    # 16080
 solution = solution.loc[:, solution.columns == 'POWER'].values  # 720
 
-
-"""
-# split into train and test sets
-
-train_size = int(len(dataset) * 0.67)
-test_size = len(dataset) - train_size
-train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
-"""
-look_back = 3
+look_back      = 3
+# Is it right to split test and solution data?
 trainX, trainY = create_dataset(dataset, look_back)
-testX, testY = create_dataset(solution, look_back)
-
+testX, testY   = create_dataset(solution, look_back)
 
 # LinReg
 # -----------------------------------------------------------------------------
 linreg = LinearRegression()		# Model
-linreg.fit(trainX, trainY) 					# Training the model
+linreg.fit(trainX, trainY) 		# Training the model
 
 # Make predictions
 trainPredict = linreg.predict(trainX)
-y_pred = linreg.predict(testX)
+y_pred       = linreg.predict(testX)
 
 # sol er fortsatt en for lang, vet ikke hvordan vi skal fikse det
 metrics(testY, y_pred)
@@ -73,45 +65,46 @@ metrics(testY, y_pred)
 plt.figure()
 plt.plot(y_pred, label="y_pred")
 plt.plot(testY, label="testY")
-plt.title("LR")
-plt.legend()#; plt.show()
+plt.title("LR"); plt.legend()#; plt.show()
 
 # RNN
 # -----------------------------------------------------------------------------
-
 trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
 # create and fit the LSTM network
 model = Sequential()
 # What should the number be? 1?
-num = 4
-model.add(LSTM(num, input_shape=(1, look_back)))
-model.add(Dense(1))
-model.compile(loss='mean_squared_error', optimizer='adam')
-model.fit(trainX, trainY, epochs=3, batch_size=1, verbose=2)
+units = 3   # trainX.shape[2]
+#model.add(LSTM(units, input_shape=(1, look_back)))  # activation='relu', return_sequences=True
+#model.add(LSTM(units, activation='relu', input_shape=(trainX.shape[1], look_back)))
 
+# YouTube
+model.add(LSTM(4, activation='relu', return_sequences=True, input_shape=(trainX.shape[1], look_back)))
+model.add(Dropout(0.2))
+model.add(LSTM(20, activation='relu', return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(80, activation='relu', return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(120, activation='relu'))
+model.add(Dropout(0.2))
+
+
+model.add(Dense(1))
+#model.summary()
+
+model.compile(loss='mean_squared_error', optimizer='adam')
+#model.fit(trainX, trainY, epochs=10, batch_size=16, verbose=2) # 32
+model.fit(trainX, trainY, epochs=10, batch_size=16) # 32
 
 # make predictions
 trainPredict = model.predict(trainX)
-testPredict = model.predict(testX)
-# invert predictions
-#trainPredict = scaler.inverse_transform(trainPredict)
-#trainY = scaler.inverse_transform([trainY])
-#testPredict = scaler.inverse_transform(testPredict)
-#testY = scaler.inverse_transform([testY])
+testPredict = model.predict(testX)      # y_pred
 
 metrics(testY, testPredict)
 
-""" Disse linjene virker ikke...
-# shift test predictions for plotting
-testPredictPlot = np.empty_like(dataset)
-testPredictPlot[:, :] = np.nan
-testPredictPlot[len(trainPredict)+(look_back*2)+1:len(dataset)-1, :] = testPredict
-"""
 # plot baseline and predictions
 plt.figure()
 plt.plot(testY, label="testY")
 plt.plot(testPredict, label="y_pred")
-plt.title("RNN")
-plt.legend(); plt.show()
+plt.title("RNN"); plt.legend(); plt.show()
