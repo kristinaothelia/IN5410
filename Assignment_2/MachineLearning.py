@@ -154,15 +154,24 @@ def SVR_gridsearch(features, target, pred_features, power_solution):
 
 	return best_params
 
-def SVR_func(features, target, pred_features, power_solution, default=True):
+def SVR_func(features, target, pred_features, power_solution, default=True, Task3=False):
 	#https://medium.com/pursuitnotes/support-vector-regression-in-6-steps-with-python-c4569acd062d
 
 	if default:
-		kernel	= 'rbf'
-		C		= 0.01
-		gamma	= 'scale'
-		epsilon = 0.1
-		svr_reg = SVR(kernel=kernel, C=C, gamma=gamma, epsilon=epsilon)
+
+		if Task3:
+			kernel	= 'linear'
+			C		= 0.001
+			gamma	= 'scale'
+			epsilon = 0.01
+			svr_reg = SVR(kernel=kernel, C=C, gamma=gamma, epsilon=epsilon)
+
+		else:
+			kernel	= 'rbf'
+			C		= 0.01
+			gamma	= 'scale'
+			epsilon = 0.1
+			svr_reg = SVR(kernel=kernel, C=C, gamma=gamma, epsilon=epsilon)
 
 	else:
 		best_params = SVR_gridsearch(features, target, pred_features, power_solution)
@@ -238,7 +247,7 @@ def FFNN_Heatmap_MSE_R2(features, target, pred_features, power_solution, eta_val
 	#etas = ["{:0.2e}".format(i) for i in eta_vals]
 	return MSE_, RMSE_, R2_
 
-def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=False, shuffle=True):
+def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, default=False, shuffle=True, Task3=False):
 	"""
 	Feed Forward Neural Network
 	# Best parameters:  {'activation': 'relu', 'alpha': 0.001, 'learning_rate': 'adaptive', 'learning_rate_init': 0.1, 'max_iter': 1500, 'solver': 'sgd'}
@@ -246,16 +255,25 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 	"""
 	if default:
 
-		activation    		= "relu"
-		solver		  		= "adam" 		# sdg
-		learning_rate 		= "adaptive"	# constant
-		alpha 		  		= 0.001
-		learning_rate_init  = 1e-5
+		if Task3:
+			activation    		= "relu"
+			solver		  		= "sgd" 		# sdg
+			learning_rate 		= "adaptive"	# constant
+			alpha 		  		= 0.01
+			learning_rate_init  = 0.1
+			max_iter			= 500
+		else:
+			activation    		= "relu"
+			solver		  		= "adam" 		# sdg
+			learning_rate 		= "adaptive"	# constant
+			alpha 		  		= 0.001
+			learning_rate_init  = 1e-5
+			max_iter			= 1500
 
 		reg = MLPRegressor(	activation=activation, solver=solver,
 							learning_rate=learning_rate,
 							alpha=alpha, learning_rate_init=learning_rate_init,
-							max_iter=1000, tol=1e-5, shuffle=shuffle )
+							max_iter=max_iter, tol=1e-5, shuffle=shuffle )
 	else:
 		best_params   		= FFNN_gridsearch(features, target, pred_features, power_solution, lmbd_vals, eta_vals, shuffle=shuffle)
 		reg 		  		= MLPRegressor().set_params(**best_params)
@@ -270,57 +288,63 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 
 	return y_pred, power_solution, activation, solver, alpha, learning_rate_init
 
-def create_model(units=4, activation='sigmoid', optimizer='adam'):
-	""" 
+def LR_SVR(trainX, trainY, testX, testY):
+
+	y_pred_LR, power_solution = linreg(features=trainX, target=trainY, pred_features=testX, power_solution=testY)	# ??
+	y_pred_SVR, power_solution, kernel, C, gamma, epsilon = SVR_func(features=trainX, target=trainY, pred_features=testX, power_solution=testY, Task3=True)
+	#trainPredict, testPredict = linear_regression_T3(X_train=trainX, y_train=trainY, X_test=testX)
+	return y_pred_LR, y_pred_SVR, power_solution, kernel, C, gamma, epsilon
+
+def create_model(units=4, look_back=1, activation='sigmoid', optimizer='adam'):
+	"""
 	Function to create rnn model, required for KerasRegressor
 	https://machinelearningmastery.com/use-keras-deep-learning-models-scikit-learn-python/
 	https://machinelearningmastery.com/grid-search-hyperparameters-deep-learning-models-python-keras/
 	"""
-	input_node=1; dropout_node=1; look_back=1   # needs to be removed fixed later if lookback > 1
+	input_node=1; dropout_node=1
 
 	# Creating and compiling model
 	model = Sequential()
 	model.add(LSTM(units=units, activation=activation, input_shape=(input_node, look_back)))
 	model.add(Dense(dropout_node))
 	#from keras.optimizers import SGD                   # based on links, maybe not so important...?
-	#optimizer = SGD(lr=learn_rate, momentum=momentum)                        
+	#optimizer = SGD(lr=learn_rate, momentum=momentum)
 	model.compile(loss='mean_squared_error', optimizer=optimizer)
 
 	return model
 
 def RNN_gridsearch(look_back, trainX, trainY):
-	""" 
-	Tuning hyperparameters using GridSearchCV 
+	"""
+	Tuning hyperparameters using GridSearchCV
 
 	Keras models can be used in scikit-learn by wrapping them with the KerasRegressor class
 	To use these wrappers you must define a function that creates and returns your Keras sequential model
-	The constructor for the KerasRegressor class can take default arguments that are passed on to the calls 
+	The constructor for the KerasRegressor class can take default arguments that are passed on to the calls
 	to model.fit(), such as the number of epochs and the batch size.
 	"""
 
-	# seems to be best if bz is a bit smaller than epoch...? 
+	# seems to be best if bz is a bit smaller than epoch...?
 	# dropout seems to be most used in deeper networks?
 
-	input_node = trainX.shape[1] 
+	input_node = trainX.shape[1]
 
 	# perhaps just use fixed values instead for these, takes too long time....
-	# n_jobs=-1, is this causing an issue resulting in longer time...? 
+	# n_jobs=-1, is this causing an issue resulting in longer time...? Tror den bruker alt ledig på PCen for aa kjore da..
 	# error_score=np.nan  got rid of some printing errors, but needs to check what it does, maybe its bad to use?
 	epo  = 8
 	bz   = 4
 
 	# fix random seed for better (nb: not perfect) reproducibility
-	seed = 7
-	np.random.seed(seed)
+	seed = 7; np.random.seed(seed)
 
-	parameters  = {	'units': [3, 10, 20, 30], \
+	parameters  = {	'units': [3, 15, 30], \
 					'activation': ['sigmoid', 'relu'], \
 					'optimizer': ['adam', 'sgd'],\
-					'epochs' : [1, 5, 9],\
-					'batch_size' : [1, 2, 3]}
-	
+					'epochs' : [5, 10],\
+					'batch_size' : [1, 6, 16]}
+
 	#The constructor for the KerasClassifier
-	rnn = KerasRegressor(build_fn=create_model, verbose=2)                # epochs=epo, batch_size=bz
+	rnn = KerasRegressor(build_fn=create_model(look_back=look_back), verbose=2)                # epochs=epo, batch_size=bz
 
 	grid = GridSearchCV(estimator=rnn, param_grid=parameters, n_jobs=-1, error_score=np.nan)
 	grid_search = grid.fit(trainX, trainY) 				                  # epochs=epo, batch_size=bz
@@ -334,23 +358,27 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
-	
+
 	# kanskje nå bruke denne til RNN med 'best params' fra gridsearch rnn...?
-	# focus on understanding this basic RNN, and making it as best possible, 
+	# focus on understanding this basic RNN, and making it as best possible,
 	# and also being able to connect this to theory/discussion in report
-	
+
 	# HUSK: ikke funnet ut hva han mente med hidden layers not fixed to 1 (!!!)
 	# Maybe they are fixed now fixed now, if not, how and why??  xD
 
 	# Needs to sure/doublecheck if this is indeed a basic RNN,
 	# not FFNN or something.. using LSTM should mean we are using RNN tho, or....?
+	"""
+	Wiki: Long short-term memory (LSTM) is an artificial RNN architecture used in
+	the field of deep learning. Unlike standard FFNN, LSTM has feedback connections.
+	"""
 
 	input_node  = trainX.shape[1]  # timesteps
 	hidden_node = 10  	# number of hidden nodes in the hidden layer
 	output_node = 1	  	# output node (1 because we want a single prediction output)
 	n_epochs 	= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
 	batches 	= 16	# a collection of samples that the network will process, used to update the weights
-
+	batches 	= 6	# a collection of samples that the network will process, used to update the weights
 
 	# Create and fit the LSTM network
 	model = Sequential()
@@ -362,14 +390,12 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	model.add(Dense(output_node))                              # output layer
 	model.compile(loss='mean_squared_error', optimizer='adam')
 
-
 	history = model.fit(trainX, trainY,\
 		                epochs=n_epochs,\
 		                batch_size=batches,\
 		                validation_data=(testX, testy),\
 						verbose=2,\
 		                shuffle=False)
-
 
 	P.history_plot(history, hidden_node, n_epochs, batches, savefig=True)
 
@@ -380,13 +406,13 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	trainPredict = model.predict(trainX)
 	testPredict  = model.predict(testX)
 
-	return trainPredict, testPredict
+	return trainPredict, testPredict, hidden_node, n_epochs, batches
 
 
 def deep_RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	"""
-	Experimenting with Deep RNN (hidden layer > 1). 
-	This function is under development... 
+	Experimenting with Deep RNN (hidden layer > 1).
+	This function is under development...
 	Do we se an improvement just by adding more layers without further tuning..?
 	Checking some additional hyperparameters more important for deep rnn
 	stateful=True, see someone uses this, what does this?
@@ -427,55 +453,6 @@ def deep_RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	return trainPredict, testPredict
 
 
-def LR_SVR(trainX, trainY, testX, testY):
-
-	"""
-	def timeseries_to_supervised(data, lag=1):
-		'''
-		Transformes the timeseries data into supervised dataset
-								 [a1, a2]
-								 [a2, a3]
-		[a1,a2,a3,a4,a5,a6] ---> [a3, a4]
-								 [a4, a5]
-								 [a5, a6]
-								 [a6,  0]
-		'''
-		df = pd.DataFrame(data)
-		columns = [df.shift(i) for i in range(1, lag+1)]
-		columns.append(df)
-		df = pd.concat(columns, axis=1)
-		df.fillna(0, inplace=True)
-		return df
-	"""
-
-	""" Noe aa bruke?
-	for i in range(len(solution_power)):
-		#print(np.array([previous_power]).shape)
-		next_hour_prediction = model.predict(np.array([previous_power]))[0][0]
-		#print(next_hour_prediction)
-		power_prediction.append(next_hour_prediction)
-
-		previous_power = previous_power[1:]
-		previous_power.append(next_hour_prediction)
-	"""
-
-	#supervised          = timeseries_to_supervised(target, 1)
-	#supervised_values   = supervised.values
-
-	#trainX = supervised_values[:,0].reshape(1, -1)
-	#trainY = supervised_values[:,1].reshape(1, -1)
-	#testX  = power_solution
-
-	y_pred_LR, power_solution = linreg(features=trainX, target=trainY, pred_features=testX, power_solution=testY)	# ??
-	y_pred_SVR, power_solution, kernel, C, gamma, epsilon = SVR_func(features=trainX, target=trainY, pred_features=testX, power_solution=testY)
-	#trainPredict, testPredict = linear_regression_T3(X_train=trainX, y_train=trainY, X_test=testX)
-	return y_pred_LR, y_pred_SVR, power_solution
-
-
-
-
-def FFNN_RNN():
-	pass
 
 # -----------------------------------------------------------------------------
 

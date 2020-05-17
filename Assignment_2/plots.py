@@ -78,7 +78,7 @@ def prediction_solution_plot_T3_1(y_pred, y_pred_svr, power_solution, date, titl
     else:
         plt.show()
 
-def prediction_solution_plot_T3_2(y_pred, y_pred_rnn, power_solution, title="", figname='', savefig=False):
+def prediction_solution_plot_T3_2(y_pred, y_pred_rnn, power_solution, date, title="", figname='', savefig=False):
     """
     Function thats plots the predicted power vs. the actual generated power
     """
@@ -86,6 +86,9 @@ def prediction_solution_plot_T3_2(y_pred, y_pred_rnn, power_solution, title="", 
     ax.plot_date(date, power_solution, 'g-', linewidth=0.9, label="Real")
     ax.plot_date(date, y_pred, 'b-', linewidth=0.9, label="Predicted, FFNN")
     ax.plot_date(date, y_pred_rnn, 'm-', linewidth=0.9, label="Predicted, RNN")
+    fig.autofmt_xdate(ha='center')
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+    ax.xaxis.set_major_locator(MaxNLocator(nbins='auto'))
 
     plt.title(title, fontsize=15)
     plt.xlabel("Time", fontsize=15)
@@ -110,7 +113,7 @@ def Metrics(power_solution, y_pred, param="", method="", filename=""):
     with open(filename, 'w') as w:
         w.write(str(x))
 
-def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="", Task1=False, Task2=False):
+def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, param_1="", param_2="", filename="", Task1=False, Task2=False):
 
     x = PrettyTable()
     if Task1:
@@ -121,6 +124,7 @@ def Metrics_compare(power_solution, y_pred_lr, y_pred_mlr, filename="", Task1=Fa
         x.field_names = ["", "FFNN", "RNN"]
     x.align[""] = "l"
 
+    x.add_row(["", param_1, param_2])
     x.add_row(["MSE",  "%.3f"% ML.MSE(power_solution, y_pred_lr),  "%.3f"% ML.MSE(power_solution, y_pred_mlr)])
     x.add_row(["RMSE", "%.3f"% ML.RMSE(power_solution, y_pred_lr), "%.3f"% ML.RMSE(power_solution, y_pred_mlr)])
     x.add_row(["R2",   "%.3f"% ML.R2(power_solution, y_pred_lr),   "%.3f"% ML.R2(power_solution, y_pred_mlr)])
