@@ -302,6 +302,9 @@ def create_model(units=4, look_back=1, activation='sigmoid', optimizer='adam'):
 	https://machinelearningmastery.com/grid-search-hyperparameters-deep-learning-models-python-keras/
 	"""
 	input_node=1; dropout_node=1
+	#look_back=10
+
+	print(look_back, 'look_back')
 
 	# Creating and compiling model
 	model = Sequential()
@@ -344,13 +347,12 @@ def RNN_gridsearch(look_back, trainX, trainY):
 					'batch_size' : [1, 6, 16]}
 
 	#The constructor for the KerasClassifier
-	rnn = KerasRegressor(build_fn=create_model(look_back=look_back), verbose=2)                # epochs=epo, batch_size=bz
+	rnn = KerasRegressor(build_fn=create_model, look_back=look_back, verbose=2)                # epochs=epo, batch_size=bz
 
-	grid = GridSearchCV(estimator=rnn, param_grid=parameters, n_jobs=-1, error_score=np.nan)
+	grid = GridSearchCV(estimator=rnn, param_grid=parameters, error_score=np.nan) #n_jobs=-1
 	grid_search = grid.fit(trainX, trainY) 				                  # epochs=epo, batch_size=bz
 
 	best_params = grid_search.best_params_
-	print("\nBest parameters: ", best_params)
 
 	return best_params
 

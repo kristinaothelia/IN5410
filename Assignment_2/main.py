@@ -310,7 +310,8 @@ if __name__ == '__main__':
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
             # Virker ikke
-            #paramss = ML.RNN_gridsearch(look_back, trainX, trainY)
+            best_params = ML.RNN_gridsearch(look_back, trainX, trainY)
+            print("\nBest parameters: ", best_params)
 
             train_pred, y_pred_RNN, hidden_node, n_epochs, batches = ML.RNN(look_back, trainX, trainY, testX, testY, summary=False)
 
