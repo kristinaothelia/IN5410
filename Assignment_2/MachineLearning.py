@@ -36,6 +36,7 @@ sys.stderr = open(os.devnull, 'w')
 #import keras
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout, SimpleRNN
+from keras.wrappers.scikit_learn import KerasRegressor
 sys.stderr = stderr
 
 
@@ -267,35 +268,62 @@ def FFNN(features, target, pred_features, power_solution, lmbd_vals, eta_vals, d
 	reg    = reg.fit(features, target)        # Training the model
 	y_pred = reg.predict(pred_features)       # Predicting
 
-	# Compare predicted and actual values
-	#compare_values = pd.DataFrame({'Actual': power_solution.flatten(), 'Predicted': y_pred.flatten()})
-	#print("\nComapre power_solution and y_pred:\n", compare_values)
-
 	return y_pred, power_solution, activation, solver, alpha, learning_rate_init
 
+def create_model(units=4, activation='sigmoid', optimizer='adam'):
+	""" 
+	Function to create rnn model, required for KerasRegressor
+	https://machinelearningmastery.com/use-keras-deep-learning-models-scikit-learn-python/
+	https://machinelearningmastery.com/grid-search-hyperparameters-deep-learning-models-python-keras/
+	"""
+	input_node=1; dropout_node=1; look_back=1   # needs to be removed fixed later if lookback > 1
 
-def RNN_gridsearch(input_node, look_back, epochs, batch_size):
-	""" Finding the best parameters using GridSearchCV """
+	# Creating and compiling model
+	model = Sequential()
+	model.add(LSTM(units=units, activation=activation, input_shape=(input_node, look_back)))
+	model.add(Dense(dropout_node))
+	#from keras.optimizers import SGD                   # based on links, maybe not so important...?
+	#optimizer = SGD(lr=learn_rate, momentum=momentum)                        
+	model.compile(loss='mean_squared_error', optimizer=optimizer)
 
+	return model
 
-	# We could maybe try something ish like these:
-	# 	hidden_node = [4, 6, 10, 15]
-	#	epoch_size  = [5, 10, 15, 20]   			(=150 in PP lecture slide, takes loooong time..)
-	#	batch_size  = [1, 5, 10]
-	#	optimizer='adam'/'sdg'
-	#	activation='sigmoid'/'relu'
+def RNN_gridsearch(look_back, trainX, trainY):
+	""" 
+	Tuning hyperparameters using GridSearchCV 
 
-	parameters  = {	'units': [3, 10, 30, 60], \
+	Keras models can be used in scikit-learn by wrapping them with the KerasRegressor class
+	To use these wrappers you must define a function that creates and returns your Keras sequential model
+	The constructor for the KerasRegressor class can take default arguments that are passed on to the calls 
+	to model.fit(), such as the number of epochs and the batch size.
+	"""
+
+	# seems to be best if bz is a bit smaller than epoch...? 
+	# dropout seems to be most used in deeper networks?
+
+	input_node = trainX.shape[1] 
+
+	# perhaps just use fixed values instead for these, takes too long time....
+	# n_jobs=-1, is this causing an issue resulting in longer time...? 
+	# error_score=np.nan  got rid of some printing errors, but needs to check what it does, maybe its bad to use?
+	epo  = 8
+	bz   = 4
+
+	# fix random seed for better (nb: not perfect) reproducibility
+	seed = 7
+	np.random.seed(seed)
+
+	parameters  = {	'units': [3, 10, 20, 30], \
 					'activation': ['sigmoid', 'relu'], \
-					'recurrent_activation': ['sigmoid', 'linear'], \
-					'optimizer': ['adam', 'sdg']}
-	rnn = Sequential()
-	rnn.add(LSTM(units=10, input_shape=(input_node, look_back)))
-	rnn.add(Dense(1))                              # output layer
-	rnn.compile(loss='mean_squared_error')
+					'optimizer': ['adam', 'sgd'],\
+					'epochs' : [1, 5, 9],\
+					'batch_size' : [1, 2, 3]}
+	
+	#The constructor for the KerasClassifier
+	rnn = KerasRegressor(build_fn=create_model, verbose=2)                # epochs=epo, batch_size=bz
 
-	grid_search = GridSearchCV(rnn, parameters, n_jobs=-1)
-	grid_search.fit(trainX, trainY, epochs=epochs, batch_size=batch_size)
+	grid = GridSearchCV(estimator=rnn, param_grid=parameters, n_jobs=-1, error_score=np.nan)
+	grid_search = grid.fit(trainX, trainY) 				                  # epochs=epo, batch_size=bz
 
 	best_params = grid_search.best_params_
 	print("\nBest parameters: ", best_params)
@@ -306,41 +334,26 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	# https://www.artificiallyintelligentclaire.com/recurrent-neural-networks-python/
 	# https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 	# Installing keras: https://anaconda.org/conda-forge/keras
-	# look_back is 'the number of features'
+	
+	# kanskje nå bruke denne til RNN med 'best params' fra gridsearch rnn...?
+	# focus on understanding this basic RNN, and making it as best possible, 
+	# and also being able to connect this to theory/discussion in report
+	
+	# HUSK: ikke funnet ut hva han mente med hidden layers not fixed to 1 (!!!)
+	# Maybe they are fixed now fixed now, if not, how and why??  xD
 
-	# Values from slide 45 from lecture PP TimeSeriesProduction... If i have implemented correctly xD
-	#input_node  = 1     # = n_time_steps???? Should always be 1 in our case like the output_node???? unsure.....
-	input_node  = trainX.shape[1]
+	# Needs to sure/doublecheck if this is indeed a basic RNN,
+	# not FFNN or something.. using LSTM should mean we are using RNN tho, or....?
+
+	input_node  = trainX.shape[1]  # timesteps
 	hidden_node = 10  	# number of hidden nodes in the hidden layer
 	output_node = 1	  	# output node (1 because we want a single prediction output)
 	n_epochs 	= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
 	batches 	= 16	# a collection of samples that the network will process, used to update the weights
 
-	# Create and fit the LSTM network (default activation is sigmoid)
-	# Can later experiment with adding more hidden layers to the RNN
-	# return_sequences=True (look at this if adding more hidden layers) # stateful=True
+
+	# Create and fit the LSTM network
 	model = Sequential()
-
-	"""
-	# YouTube
-	model.add(LSTM(4, activation='relu', return_sequences=True, input_shape=(trainX.shape[1], look_back)))
-	model.add(Dropout(0.2))
-	model.add(LSTM(20, activation='relu', return_sequences=True))
-	model.add(Dropout(0.2))
-	model.add(LSTM(80, activation='relu', return_sequences=True))
-	model.add(Dropout(0.2))
-	model.add(LSTM(120, activation='relu'))
-	model.add(Dropout(0.2))
-
-	model.add(Dense(1))
-	model.summary()
-
-	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(trainX, trainY, epochs=10, batch_size=16) # 32
-	"""
-
-
-
 
 	model.add(LSTM(units=hidden_node,\
 				   activation='sigmoid',\
@@ -350,14 +363,6 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	model.compile(loss='mean_squared_error', optimizer='adam')
 
 
-	""" Faar det ikke til aa funke...
-	best_params   		= RNN_gridsearch(input_node, look_back, n_epochs, batches)
-	exit()
-	reg 		  		= LSTM().set_params(**best_params)
-	units				= best_params['units']
-	activation    		= best_params['activation']
-	"""
-	# Er det denne vi maa bruke GSCV paa?
 	history = model.fit(trainX, trainY,\
 		                epochs=n_epochs,\
 		                batch_size=batches,\
@@ -365,7 +370,7 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 						verbose=2,\
 		                shuffle=False)
 
-	# Tror ikke denne sier saa mye xP
+
 	P.history_plot(history, hidden_node, n_epochs, batches, savefig=True)
 
 	if summary == True:
@@ -378,6 +383,48 @@ def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	return trainPredict, testPredict
 
 
+def deep_RNN(look_back, trainX, trainY, testX, testy, summary=False):
+	"""
+	Experimenting with Deep RNN (hidden layer > 1). 
+	This function is under development... 
+	Do we se an improvement just by adding more layers without further tuning..?
+	Checking some additional hyperparameters more important for deep rnn
+	stateful=True, see someone uses this, what does this?
+	"""
+
+	input_node  = trainX.shape[1]  # timesteps
+	n_epochs 	= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
+	batches 	= 16	# a collection of samples that the network will process, used to update the weights
+	output_node = 1	  	# output node (1 because we want a single prediction output)
+	h1		    = 4  	# number of hidden nodes in hidden layer 1
+	h2		    = 20  	# number of hidden nodes in hidden layer 2
+	h3		    = 80  	# number of hidden nodes in hidden layer 3
+	h4		    = 120  	# number of hidden nodes in hidden layer 4
+
+	# YouTube
+	model.add(LSTM(h1, activation='relu', return_sequences=True, input_shape=(input_node, look_back)))
+	model.add(Dropout(0.2))
+	model.add(LSTM(h2, activation='relu', return_sequences=True))
+	model.add(Dropout(0.2))
+	model.add(LSTM(h3, activation='relu', return_sequences=True))
+	model.add(Dropout(0.2))
+	model.add(LSTM(h4, activation='relu'))
+	model.add(Dropout(0.2))
+
+	model.add(Dense(output_node))
+	model.summary()
+
+	model.compile(loss='mean_squared_error', optimizer='adam')
+	model.fit(trainX, trainY, epochs=10, batch_size=16) # 32
+
+	if summary == True:
+		print(model.summary())
+
+	# Making predictions
+	trainPredict = model.predict(trainX)
+	testPredict  = model.predict(testX)
+
+	return trainPredict, testPredict
 
 
 def LR_SVR(trainX, trainY, testX, testY):
