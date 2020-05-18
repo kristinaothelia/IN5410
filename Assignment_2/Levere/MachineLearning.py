@@ -52,9 +52,6 @@ def linreg(features, target, pred_features, power_solution):
 	linreg = LinearRegression(normalize=True)		# Model
 	linreg.fit(features, target) 					# Training the model
 
-	#print("intercept_ : ", linreg.intercept_)		# To retrieve the intercept
-	#print("coef_      : ", linreg.coef_)			# For retrieving the slope
-
 	# Make predictions
 	y_pred = linreg.predict(pred_features)
 
@@ -75,7 +72,6 @@ def kNN_gridsearch(features, target, pred_features, power_solution, plot=False):
 	print("\nBest parameters: ", best_params)
 
 	if plot:
-
 		# Make error plot, to find best k-value
 		r2   = []
 		rmse = []
@@ -298,7 +294,7 @@ def create_model(units=4, look_back=1, activation='sigmoid', optimizer='adam'):
 	model = Sequential()
 	model.add(LSTM(units=units, activation=activation, input_shape=(input_node, look_back)))
 	model.add(Dense(dropout_node))
-	#from keras.optimizers import SGD                   
+	#from keras.optimizers import SGD
 	#optimizer = SGD(lr=learn_rate, momentum=momentum)
 	model.compile(loss='mean_squared_error', optimizer=optimizer)
 
@@ -329,10 +325,10 @@ def RNN_gridsearch(look_back, trainX, trainY):
 					'batch_size' : [1, 6, 16]}
 
 	#The constructor for the KerasClassifier
-	rnn = KerasRegressor(build_fn=create_model, look_back=look_back, verbose=2) 
+	rnn = KerasRegressor(build_fn=create_model, look_back=look_back, verbose=2)
 
 	grid = GridSearchCV(estimator=rnn, param_grid=parameters, n_jobs=-1, error_score=np.nan)
-	grid_search = grid.fit(trainX, trainY) 			
+	grid_search = grid.fit(trainX, trainY)
 
 	best_params = grid_search.best_params_
 
@@ -340,14 +336,14 @@ def RNN_gridsearch(look_back, trainX, trainY):
 
 def RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	"""
-	Function for a basic RNN implementation 
+	Function for a basic RNN implementation
 	"""
 
-	input_node  = trainX.shape[1]  # timesteps
-	hidden_node = 30  	# number of hidden nodes in the hidden layer
-	output_node = 1	  	# output node (1 because we want a single prediction output)
-	n_epochs 	= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
-	batches 	= 6		# a collection of samples that the network will process, used to update the weights
+	input_node  = trainX.shape[1]  	# timesteps
+	hidden_node = 30  				# number of hidden nodes in the hidden layer
+	output_node = 1	  				# output node (1 because we want a single prediction output)
+	n_epochs 	= 10  				# an epoch is one pass over the training dataset, consists of one or more batches
+	batches 	= 6					# a collection of samples that the network will process, used to update the weights
 
 	# Create and fit the LSTM network
 	model = Sequential()
@@ -384,14 +380,14 @@ def deep_RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	This function is under development...
 	"""
 
-	input_node  = trainX.shape[1]  # timesteps
-	n_epochs 	= 10  	# an epoch is one pass over the training dataset, consists of one or more batches
-	batches 	= 6		# a collection of samples that the network will process, used to update the weights
-	output_node = 1	  	# output node (1 because we want a single prediction output)
-	h1		    = 4  	# number of hidden nodes in hidden layer 1
-	h2		    = 20  	# number of hidden nodes in hidden layer 2
-	h3		    = 80  	# number of hidden nodes in hidden layer 3
-	h4		    = 120  	# number of hidden nodes in hidden layer 4
+	input_node  = trainX.shape[1]  	# timesteps
+	n_epochs 	= 10  				# an epoch is one pass over the training dataset, consists of one or more batches
+	batches 	= 6					# a collection of samples that the network will process, used to update the weights
+	output_node = 1	  				# output node (1 because we want a single prediction output)
+	h1		    = 4  				# number of hidden nodes in hidden layer 1
+	h2		    = 20  				# number of hidden nodes in hidden layer 2
+	h3		    = 80  				# number of hidden nodes in hidden layer 3
+	h4		    = 120  				# number of hidden nodes in hidden layer 4
 
 
 	model = Sequential()
@@ -418,8 +414,6 @@ def deep_RNN(look_back, trainX, trainY, testX, testy, summary=False):
 	testPredict  = model.predict(testX)
 
 	return trainPredict, testPredict
-
-
 
 # -----------------------------------------------------------------------------
 

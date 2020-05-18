@@ -2,7 +2,6 @@
 IN5410 - Energy informatics | Assignment 2
 """
 import os, random, sys, argparse, warnings, csv
-#import sys, argparse, warnings, csv
 
 import matplotlib.pyplot 	as plt
 import numpy               	as np
@@ -39,7 +38,6 @@ if __name__ == '__main__':
     parser.add_argument('-K', '--KNN',   action='store_true', help="K-nearest neighbor", required=False)
     parser.add_argument('-S', '--SVR',   action='store_true', help="Support Vector Machine", required=False)
     parser.add_argument('-F', '--FFNN',  action='store_true', help="Feed Forward Neural Network", required=False)
-    parser.add_argument('-R', '--RNN',  action='store_true',  help="Recurrent Neural Network", required=False)
     # Optional argument for plotting
     parser.add_argument('-X', '--Plot',  action='store_true', help="Plotting", required=False)
     # Optional argument for printing out possible warnings
@@ -58,7 +56,6 @@ if __name__ == '__main__':
     KNN       = args.KNN
     SVR       = args.SVR
     FFNN      = args.FFNN
-    RNN       = args.RNN
     Warnings  = args.Warnings
 
     if not Warnings:
@@ -244,11 +241,10 @@ if __name__ == '__main__':
         # We will only use Target and Power solution now.
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
 
-        if LR == True:
-
+        def LR_SVR(target, power_solution):
             print("LR and SVR\n")
 
-            look_back = 1       
+            look_back = 1
 
             trainX, trainY = Data.create_dataset(target, look_back)          # training data set
             testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set
@@ -266,11 +262,10 @@ if __name__ == '__main__':
                 P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-look_back], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
 
 
-        elif RNN == True:
+        def NN(target, power_solution, deep=False, GSCV=False):
             print("FFNN and Recurrent Neural Network (RNN)\n")
 
-            look_back = 10      # 1, 3 
-
+            look_back = 10      # 1, 3
 
             trainX, trainY = Data.create_dataset(target, look_back)
             testX, testY   = Data.create_dataset(power_solution, look_back)
@@ -287,16 +282,17 @@ if __name__ == '__main__':
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            # Gridsearching parameters
-            #best_params = ML.RNN_gridsearch(look_back, trainX, trainY)
-            #print("\nBest parameters: ", best_params)
-            #Best parameters:  {'activation': 'relu', 'batch_size': 6, 'epochs': 10, 'optimizer': 'adam', 'units': 30}
+            if GSCV:
+                # Gridsearching parameters
+                best_params = ML.RNN_gridsearch(look_back, trainX, trainY)
+                #Best parameters:  {'activation': 'relu', 'batch_size': 6, 'epochs': 10, 'optimizer': 'adam', 'units': 30}
 
             train_pred, y_pred_RNN, hidden_node, n_epochs, batches = ML.RNN(look_back, trainX, trainY, testX, testY, summary=False)
 
-            trainPredict_deep, testPredict_deep = ML.deep_RNN(look_back, trainX, trainY, testX, testY, summary=False)
-            rmse_deep                           = ML.RMSE(power_solution, testPredict_deep)
-            print('rmse deep: ', rmse_deep)
+            if deep:
+                trainPredict_deep, testPredict_deep = ML.deep_RNN(look_back, trainX, trainY, testX, testY, summary=False)
+                rmse_deep                           = ML.RMSE(power_solution, testPredict_deep)
+                print('rmse deep: ', rmse_deep)
 
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred_FFNN, time=timestamps[:-look_back], \
@@ -309,5 +305,5 @@ if __name__ == '__main__':
             if Plot == True:     # Graphical illustration
                 P.prediction_solution_plot_T3_2(y_pred_FFNN, y_pred_RNN, power_solution, times_plot[:-look_back], title='FFNN and RNN', figname='Results/Task3_FFNN_RNN.png', savefig=True)
 
-        else:
-            print("Pass an argument for ML method for Task 3 (-L, -R)")
+        LR_SVR(target, power_solution)
+        NN(target, power_solution, deep=False, GSCV=False)

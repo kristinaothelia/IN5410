@@ -91,7 +91,7 @@ def prediction_solution_plot_T3_2(y_pred, y_pred_rnn, power_solution, date, titl
     ax.xaxis.set_major_locator(MaxNLocator(nbins='auto'))
 
     plt.title(title, fontsize=15)
-    plt.xlabel("Time", fontsize=15)
+    plt.xlabel("Year %s" %date.year[0], fontsize=15)
     plt.ylabel("Wind power [normalized]", fontsize=15)
     plt.legend(loc='lower right'); plt.grid(alpha=0.6, linewidth=0.5); plt.tight_layout()
 
@@ -106,8 +106,6 @@ def Metrics(power_solution, y_pred, param="", method="", filename=""):
     x.field_names = [param, "MSE", "RMSE", "R2"]
 
     x.add_row([method,  "%.3f"% ML.MSE(power_solution, y_pred), "%.3f"% ML.RMSE(power_solution, y_pred), "%.3f"% ML.R2(power_solution, y_pred)])
-    #x.add_row(["RMSE", "%.3f"% ML.RMSE(power_solution, y_pred)])
-    #x.add_row(["R2",   "%.3f"% ML.R2(power_solution, y_pred)])
 
     print(x)
     with open(filename, 'w') as w:
@@ -153,7 +151,6 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
     if savefigs:
         plt.savefig(figname + '_MSE')
 
-
     # Creating a heatmap of RMSE values
     fig, ax = plt.subplots()
     sns.heatmap(RMSE, annot=True, linewidths=.3, linecolor="black", ax=ax)
@@ -167,7 +164,6 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
 
     if savefigs:
         plt.savefig(figname + '_RMSE')
-
 
     # Creating a heatmap of R2 values
     fig, ax = plt.subplots()
@@ -183,7 +179,6 @@ def Heatmap_MSE_R2(MSE, RMSE, R2, lmbd_vals, eta_vals, title='', figname='', sav
     if savefigs:
         plt.savefig(figname + '_R2')
 
-    #else:
     plt.show()
 
 
@@ -206,7 +201,6 @@ def history_plot(history, hidden_node, epochs, batch_size, savefig=True):
             'size'   : 12}
 
     plt.rc('font', **font)
-
 
     # Plotting MSE against n_epochs to estimate model performance on train and test data
     plt.figure(figsize=(8.4, 5.8))
