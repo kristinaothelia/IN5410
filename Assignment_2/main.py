@@ -244,14 +244,11 @@ if __name__ == '__main__':
         # We will only use Target and Power solution now.
         features, target, pred_features, power_solution = Data.Data(TrainData, WF_input, Solution, meter='T3')
 
-        # Kanskje bare droppe if paa denne? Det er liksom bare task 3 siden vi skal lage felles plott osv..
-        # Men vi maa vel gjore GridSearch fortsatt.. Eller default fra task 1? (utenom RNN)
-        # Vi kan kanskje prøve å fjerne denne ja, eller skrive det på en bedre måte..
         if LR == True:
 
             print("LR and SVR\n")
 
-            look_back = 1       # Hva burde denne vere..?
+            look_back = 1       
 
             trainX, trainY = Data.create_dataset(target, look_back)          # training data set
             testX, testY   = Data.create_dataset(power_solution, look_back)  # testing  data set
@@ -268,30 +265,12 @@ if __name__ == '__main__':
             if Plot == True:     # Graphical illustration
                 P.prediction_solution_plot_T3_1(y_pred_LR, y_pred_SVR, power_solution, times_plot[:-look_back], title="LR and SVR", figname='Results/Task3_LR_SVR.png', savefig=True)
 
-            '''
-            # some people are 'adding' the prediction (yhat) with testX  === yhat
-            # and the testY with Xtest                                   === y
-            # and then they calculate the rmse on the full/entire test set, maybe google/send mail about this
-            yhat = y_pred_SVR #y_pred_LR
-            # reshape testX from (719,1) to (719,)
-            testX = testX.flatten()
-            # invert scaling for forecast
-            inv_yhat = np.concatenate((yhat, testX))
-            # invert scaling for actual
-            power_solution = power_solution.flatten()
-            inv_y = np.concatenate((power_solution, testX))
-            # calculate RMSE
-            print(inv_y.shape, inv_yhat.shape)
-            rmse = ML.RMSE(inv_y, inv_yhat)
-            print(rmse)
-            '''
 
         elif RNN == True:
-            #https://machinelearningmastery.com/how-to-develop-a-skilful-time-series-forecasting-model/
             print("FFNN and Recurrent Neural Network (RNN)\n")
 
-            look_back = 10      # =1 while getting tuning to work, may be increased to 3 when things work
-            #(predicting future, or past..? what about 'look_forward'?)
+            look_back = 10      # 1, 3 
+
 
             trainX, trainY = Data.create_dataset(target, look_back)
             testX, testY   = Data.create_dataset(power_solution, look_back)
@@ -300,7 +279,6 @@ if __name__ == '__main__':
             eta_vals   = [0.0001, 0.001, 0.01, 0.1]
             lmbd_vals  = [0.0001, 0.001, 0.01, 0.1]
 
-            # FFNN calculated with random hyperparameter, we must remember to use the best values
             y_pred_FFNN, power_solution, activation, solver, alpha, learning_rate_init \
             = ML.FFNN(trainX, trainY, testX, testY, lmbd_vals, eta_vals, default=True, shuffle=False, Task3=True)
 
@@ -309,11 +287,16 @@ if __name__ == '__main__':
             trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
             testX  = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
-            # Virker ikke
-            best_params = ML.RNN_gridsearch(look_back, trainX, trainY)
-            print("\nBest parameters: ", best_params)
+            # Gridsearching parameters
+            #best_params = ML.RNN_gridsearch(look_back, trainX, trainY)
+            #print("\nBest parameters: ", best_params)
+            #Best parameters:  {'activation': 'relu', 'batch_size': 6, 'epochs': 10, 'optimizer': 'adam', 'units': 30}
 
             train_pred, y_pred_RNN, hidden_node, n_epochs, batches = ML.RNN(look_back, trainX, trainY, testX, testY, summary=False)
+
+            trainPredict_deep, testPredict_deep = ML.deep_RNN(look_back, trainX, trainY, testX, testY, summary=False)
+            rmse_deep                           = ML.RMSE(power_solution, testPredict_deep)
+            print('rmse deep: ', rmse_deep)
 
             #Save predicted results in .cvs files
             Data.Make_csv_dataset(prediction=y_pred_FFNN, time=timestamps[:-look_back], \
